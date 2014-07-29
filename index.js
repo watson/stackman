@@ -1,0 +1,102 @@
+'use strict';
+
+var fs = require('fs');
+var stackback = require('stackback');
+
+var LINES_OF_CONTEXT = 7;
+
+module.exports = function (options) {
+  var lines_of_context = (options || {}).lines_of_context || LINES_OF_CONTEXT;
+
+  var parser = function (err, callback) {
+    var stack = stackback(err),
+        cache = {},
+        outstanding, done;
+
+    done = function () {
+      if (outstanding && --outstanding) return;
+      process.nextTick(function () {
+        callback(stack);
+      });
+    };
+
+    if (!validStack(stack)) return done();
+
+    outstanding = stack.length;
+
+    stack.forEach(function (callsite) {
+      callsite.getFunctionNameSanitized = getFunctionNameSanitized.bind(callsite);
+      callsite.getModuleName = getModuleName.bind(callsite);
+      callsite.isApp = isApp.bind(callsite);
+      callsite.isModule = isModule.bind(callsite);
+      callsite.isNode = isNode.bind(callsite);
+
+      var filename = callsite.getFileName() || '';
+
+      if (callsite.isNode()) {
+        done(); // internal Node files are not full path names. Ignore them.
+      } else if (filename in cache) {
+        callsite.context = parseLines(cache[filename], callsite);
+        done();
+      } else {
+        fs.readFile(filename, { encoding: 'utf8' }, function (err, data) {
+          if (!err) {
+            data = data.split(/\r?\n/);
+            cache[filename] = data;
+            callsite.context = parseLines(data, callsite);
+          }
+          done();
+        });
+      }
+    });
+  };
+
+  var parseLines = function (lines, callsite) {
+    var lineno = callsite.getLineNumber();
+    return {
+      pre: lines.slice(Math.max(0, lineno - (lines_of_context + 1)), lineno - 1),
+      line: lines[lineno - 1],
+      post: lines.slice(lineno, lineno + lines_of_context)
+    };
+  };
+
+  return parser;
+};
+
+var validStack = function (stack) {
+  return Array.isArray(stack) &&
+         typeof stack[0] === 'object' &&
+         typeof stack[0].getFileName === 'function';
+};
+
+var getFunctionNameSanitized = function () {
+  try {
+    return this.getFunctionName() ||
+           this.getTypeName() + '.' + (this.getMethodName() || '<anonymous>');
+  } catch (e) {
+    // This seems to happen sometimes when using 'use strict',
+    // stemming from `getTypeName`.
+    // [TypeError: Cannot read property 'constructor' of undefined]
+    return '<anonymous>';
+  }
+};
+
+var getModuleName = function () {
+  var filename = this.getFileName() || '';
+  var match = filename.match(/node_modules\/([^\/]*)/);
+  if (match) return match[1];
+}
+
+var isApp = function () {
+  var filename = this.getFileName() || '';
+  return !this.isNode() && !~filename.indexOf('node_modules/')
+};
+
+var isModule = function () {
+  return !!~(this.getFileName() || '').indexOf('node_modules/');
+};
+
+var isNode = function () {
+  var filename = this.getFileName() || '';
+  return this.isNative() || (filename[0] !== '/' && filename[0] !== '.');
+};

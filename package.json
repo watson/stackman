@@ -1,0 +1,32 @@
+{
+  "name": "stackman",
+  "version": "0.0.0",
+  "description": "Enhance an error stacktrace with code excerpts and other goodies",
+  "main": "index.js",
+  "dependencies": {
+    "stackback": "0.0.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/watson/stackman.git"
+  },
+  "keywords": [
+    "v8",
+    "stacktrace",
+    "callsite",
+    "debug",
+    "log",
+    "error",
+    "trace"
+  ],
+  "author": "Thomas Watson Steen <w@tson.dk>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/watson/stackman/issues"
+  },
+  "homepage": "https://github.com/watson/stackman"
+}
