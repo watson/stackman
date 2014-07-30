@@ -7,6 +7,9 @@ var afterAll = require('after-all');
 var LINES_OF_CONTEXT = 7;
 
 module.exports = function (options) {
+  if (options instanceof Error)
+    throw new Error('Stackman not initialized yet. Please do so first and use the returned function instead');
+
   var lines_of_context = (options || {}).context || LINES_OF_CONTEXT;
 
   var parser = function (err, callback) {
