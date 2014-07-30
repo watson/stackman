@@ -1,6 +1,12 @@
-# Stackman
+# StackMan
 
-A node.js module that creates rich stacktraces
+Give StackMan an error and he will give an array of stack frames with
+extremely detailed information for each frame in the stack trace.
+
+With StackMan you get access to the actual source code and surrounding
+lines for where the error occured, you get to know if it happended
+inside a 3rd party module, in Node.js or in your own code. For a full
+list of information, check out the API below.
 
 [![build status](https://secure.travis-ci.org/watson/stackman.png)](http://travis-ci.org/watson/stackman)
 
@@ -20,7 +26,7 @@ var err = new Error('Oops!');
 stackman(err, function (stack) {
   // stack is an array of callsite objects
   stack.forEach(function (frame) {
-    // example: <example.js:3> var err = new Error('Oops!');
+    // output: <example.js:3> var err = new Error('Oops!');
     console.log('<%s:%s> %s',
       frame.getFileName(),
       frame.getLineNumber(),
@@ -56,7 +62,7 @@ The `stackman` function takes two arguments:
 
 #### Custom methods
 
-- `callsite.getFunctionNameSanitized()`
+- `callsite.getFunctionNameSanitized()` - Guaranteed to always return the most meaningful function name. If none can be determined, the string `<anonymous>` will be returned
 - `callsite.getModuleName()` - Returns the name of the module if `isModule()` is true
 - `callsite.isApp()` - Is this inside the app? (i.e. not native, not node code and not a nodule inside the node_modules directory)
 - `callsite.isModule()` - Is this inside the node_modules directory?
