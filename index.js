@@ -31,11 +31,11 @@ module.exports = function (options) {
       callsite.isModule = isModule.bind(callsite);
       callsite.isNode = isNode.bind(callsite);
 
+      if (callsite.isNode()) return done(); // internal Node files are not full path names. Ignore them.
+
       var filename = callsite.getFileName() || '';
 
-      if (callsite.isNode()) {
-        done(); // internal Node files are not full path names. Ignore them.
-      } else if (filename in cache) {
+      if (filename in cache) {
         callsite.context = parseLines(cache[filename], callsite);
         done();
       } else {
@@ -97,6 +97,7 @@ var isModule = function () {
 };
 
 var isNode = function () {
+  if (this.isNative()) return true;
   var filename = this.getFileName() || '';
-  return this.isNative() || (filename[0] !== '/' && filename[0] !== '.');
+  return (filename[0] !== '/' && filename[0] !== '.');
 };
