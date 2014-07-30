@@ -1,6 +1,6 @@
 {
   "name": "stackman",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Enhance an error stacktrace with code excerpts and other goodies",
   "main": "index.js",
   "dependencies": {
