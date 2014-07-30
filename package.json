@@ -7,9 +7,11 @@
     "after-all": "^2.0.0",
     "stackback": "0.0.2"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "tape": "^2.13.4"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test.js"
   },
   "repository": {
     "type": "git",

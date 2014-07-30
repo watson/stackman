@@ -2,6 +2,8 @@
 
 A node.js module that creates rich stacktraces
 
+[![build status](https://secure.travis-ci.org/watson/stackman.png)](http://travis-ci.org/watson/stackman)
+
 ## Install
 
 ```
