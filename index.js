@@ -6,7 +6,7 @@ var stackback = require('stackback');
 var LINES_OF_CONTEXT = 7;
 
 module.exports = function (options) {
-  var lines_of_context = (options || {}).lines_of_context || LINES_OF_CONTEXT;
+  var lines_of_context = (options || {}).context || LINES_OF_CONTEXT;
 
   var parser = function (err, callback) {
     var stack = stackback(err),

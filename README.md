@@ -35,9 +35,7 @@ Parse options to the main stackman function to customize the default
 behavior:
 
 ```javascript
-var options = {
-  lines_of_context: 5
-};
+var options = { context: 5 };
 var stackman = require('stackman')(options);
 ```
 
