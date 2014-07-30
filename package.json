@@ -4,6 +4,7 @@
   "description": "Enhance an error stacktrace with code excerpts and other goodies",
   "main": "index.js",
   "dependencies": {
+    "after-all": "^2.0.0",
     "stackback": "0.0.2"
   },
   "devDependencies": {},

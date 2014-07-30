@@ -2,6 +2,7 @@
 
 var fs = require('fs');
 var stackback = require('stackback');
+var afterAll = require('after-all');
 
 var LINES_OF_CONTEXT = 7;
 
@@ -11,16 +12,13 @@ module.exports = function (options) {
   var parser = function (err, callback) {
     var stack = stackback(err),
         cache = {},
-        outstanding, done;
+        outstanding, next;
 
-    done = function () {
-      if (outstanding && --outstanding) return;
-      process.nextTick(function () {
-        callback(stack);
-      });
-    };
+    next = afterAll(function () {
+      callback(stack);
+    });
 
-    if (!validStack(stack)) return done();
+    if (!validStack(stack)) return next();
 
     outstanding = stack.length;
 
@@ -31,13 +29,15 @@ module.exports = function (options) {
       callsite.isModule = isModule.bind(callsite);
       callsite.isNode = isNode.bind(callsite);
 
-      if (callsite.isNode()) return done(); // internal Node files are not full path names. Ignore them.
+      var cb = next();
+
+      if (callsite.isNode()) return cb(); // internal Node files are not full path names. Ignore them.
 
       var filename = callsite.getFileName() || '';
 
       if (filename in cache) {
         callsite.context = parseLines(cache[filename], callsite);
-        done();
+        cb();
       } else {
         fs.readFile(filename, { encoding: 'utf8' }, function (err, data) {
           if (!err) {
@@ -45,7 +45,7 @@ module.exports = function (options) {
             cache[filename] = data;
             callsite.context = parseLines(data, callsite);
           }
-          done();
+          cb();
         });
       }
     });
