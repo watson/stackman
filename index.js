@@ -21,7 +21,7 @@ module.exports = function (options) {
       callback(stack);
     });
 
-    if (!validStack(stack)) return next();
+    if (!validStack(stack)) return next()();
 
     outstanding = stack.length;
 
