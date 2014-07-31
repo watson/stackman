@@ -47,6 +47,10 @@ var options = { context: 5 };
 var stackman = require('stackman')(options);
 ```
 
+Options:
+
+- `context` - The lines of context to be loaded on each side of the callsite line (default: 7)
+
 The `stackman` function takes two arguments:
 
 - `err` - the error to be parsed
