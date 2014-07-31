@@ -64,7 +64,7 @@ The `stackman` function takes two arguments:
 
 - `callsite.getFunctionNameSanitized()` - Guaranteed to always return the most meaningful function name. If none can be determined, the string `<anonymous>` will be returned
 - `callsite.getModuleName()` - Returns the name of the module if `isModule()` is true
-- `callsite.isApp()` - Is this inside the app? (i.e. not native, not node code and not a nodule inside the node_modules directory)
+- `callsite.isApp()` - Is this inside the app? (i.e. not native, not node code and not a module inside the node_modules directory)
 - `callsite.isModule()` - Is this inside the node_modules directory?
 - `callsite.isNode()` - Is this inside node core?
 
