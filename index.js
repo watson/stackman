@@ -86,7 +86,7 @@ var getFunctionNameSanitized = function () {
 
 var getModuleName = function () {
   var filename = this.getFileName() || '';
-  var match = filename.match(/node_modules\/([^\/]*)/);
+  var match = filename.match(/.*node_modules\/([^\/]*)/);
   if (match) return match[1];
 }
 
