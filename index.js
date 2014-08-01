@@ -8,7 +8,7 @@ var LINES_OF_CONTEXT = 7;
 
 module.exports = function (options) {
   if (options instanceof Error)
-    throw new Error('Stackman not initialized yet. Please do so first and use the returned function instead');
+    throw new Error('Stackman not initialized yet. Please do so first and parse the error to the returned function instead');
 
   var lines_of_context = (options || {}).context || LINES_OF_CONTEXT;
 
