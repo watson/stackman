@@ -20,7 +20,7 @@ test('should call the callback with a stack object', function (t) {
 test('should add custom properties to the stack object', function (t) {
   fs.readFile('./no_such_file', function (err) {
     stackman()(err, function (stack) {
-      t.equal(stack.properties, { errno: 34, code: 'ENOENT', path: './no_such_file' }),
+      t.deepEqual(stack.properties, { errno: 34, code: 'ENOENT', path: './no_such_file' });
       t.end();
     });
   });
