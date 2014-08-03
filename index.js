@@ -29,6 +29,7 @@ module.exports = function (options) {
     outstanding = stack.length;
 
     stack.forEach(function (callsite) {
+      callsite.getRelativeFileName = getRelativeFileName.bind(callsite);
       callsite.getFunctionNameSanitized = getFunctionNameSanitized.bind(callsite);
       callsite.getModuleName = getModuleName.bind(callsite);
       callsite.isApp = isApp.bind(callsite);
@@ -73,6 +74,13 @@ var validStack = function (stack) {
   return Array.isArray(stack) &&
          typeof stack[0] === 'object' &&
          typeof stack[0].getFileName === 'function';
+};
+
+var getRelativeFileName = function () {
+  var filename = this.getFileName();
+  if (!filename) return;
+  var root = process.cwd() + '/';
+  return !~filename.indexOf(root) ? filename : filename.substr(root.length);
 };
 
 var getFunctionNameSanitized = function () {
