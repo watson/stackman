@@ -91,8 +91,7 @@ var getModuleName = function () {
 }
 
 var isApp = function () {
-  var filename = this.getFileName() || '';
-  return !this.isNode() && !~filename.indexOf('node_modules/')
+  return !this.isNode() && !~(this.getFileName() || '').indexOf('node_modules/')
 };
 
 var isModule = function () {
