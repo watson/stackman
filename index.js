@@ -118,6 +118,7 @@ var isNode = function () {
 var getProperties = function (err) {
   var properties = {};
   Object.keys(err).forEach(function (key) {
+    if (key === 'stack') return; // 'stack' seems to be enumerable in Node 0.11
     var val = err[key];
     switch (typeof val) {
       case 'function':
