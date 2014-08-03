@@ -24,8 +24,7 @@ var stackman = require('stackman')();
 var err = new Error('Oops!');
 
 stackman(err, function (stack) {
-  // stack is an array of callsite objects
-  stack.forEach(function (frame) {
+  stack.frames.forEach(function (frame) {
     // output: <example.js:3> var err = new Error('Oops!');
     console.log('<%s:%s> %s',
       frame.getFileName(),
@@ -54,7 +53,16 @@ Options:
 The `stackman` function takes two arguments:
 
 - `err` - the error to be parsed
-- `callback` - a callback which will be called with an array of callsite stack-frames when the parsing is completed
+- `callback` - a callback which will be called with the a stack object when the parsing is completed
+
+#### The `stack` object:
+
+The callback given to the `stackman` function is called with a stack
+object when the parsing is completed. The `stack` object have two
+important properties:
+
+- `properties` - An object containing all the custom properties from the original error object (properties of type `object` and `function` are not included in this object)
+- `frames` - An array of stack-frames, also called callsite objects
 
 ### Callsite
 

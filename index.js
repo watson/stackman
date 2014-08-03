@@ -18,7 +18,10 @@ module.exports = function (options) {
         outstanding, next;
 
     next = afterAll(function () {
-      callback(stack);
+      callback({
+        properties: getProperties(err),
+        frames: stack
+      });
     });
 
     if (!validStack(stack)) return next()();
@@ -102,4 +105,19 @@ var isNode = function () {
   if (this.isNative()) return true;
   var filename = this.getFileName() || '';
   return (filename[0] !== '/' && filename[0] !== '.');
+};
+
+var getProperties = function (err) {
+  var properties = {};
+  Object.keys(err).forEach(function (key) {
+    var val = err[key];
+    switch (typeof val) {
+      case 'function':
+      case 'object':
+        return;
+      default:
+        properties[key] = val;
+    }
+  });
+  return properties;
 };

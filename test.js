@@ -1,23 +1,35 @@
 'use strict';
 
+var fs = require('fs');
 var test = require('tape');
 var afterAll = require('after-all');
 var stackman = require('./');
 
-test('should call the callback with an array of callsite objects', function (t) {
+test('should call the callback with a stack object', function (t) {
   var err = new Error();
   stackman()(err, function (stack) {
-    t.ok(Array.isArray(stack), 'should be an array');
-    t.ok(stack.length > 0, 'should have at least one element');
-    t.equal(typeof stack[0].getFileName, 'function');
+    t.ok(typeof stack === 'object', 'should be an object');
+    t.ok(typeof stack.properties === 'object', 'should be an object');
+    t.ok(Array.isArray(stack.frames), 'should be an array');
+    t.ok(stack.frames.length > 0, 'should have at least one element');
+    t.equal(typeof stack.frames[0].getFileName, 'function');
     t.end();
+  });
+});
+
+test('should add custom properties to the stack object', function (t) {
+  fs.readFile('./no_such_file', function (err) {
+    stackman()(err, function (stack) {
+      t.equal(stack.properties, { errno: 34, code: 'ENOENT', path: './no_such_file' }),
+      t.end();
+    });
   });
 });
 
 test('should add extra functions', function (t) {
   var err = new Error();
   stackman()(err, function (stack) {
-    var frame = stack[0];
+    var frame = stack.frames[0];
     t.equal(typeof frame.getFunctionNameSanitized, 'function');
     t.equal(typeof frame.getModuleName, 'function');
     t.equal(typeof frame.isApp, 'function');
@@ -30,7 +42,7 @@ test('should add extra functions', function (t) {
 test('should add context object', function (t) {
   var err = new Error();
   stackman()(err, function (stack) {
-    var frame = stack[0];
+    var frame = stack.frames[0];
     t.equal(typeof frame.context, 'object');
     t.equal(typeof frame.context.line, 'string');
     t.ok(Array.isArray(frame.context.pre), 'should be an array');
@@ -44,7 +56,7 @@ test('should add context object', function (t) {
 test('should respect the context option', function (t) {
   var err = new Error();
   stackman({ context: 2 })(err, function (stack) {
-    var frame = stack[0];
+    var frame = stack.frames[0];
     t.equal(frame.context.pre.length, 2);
     t.equal(frame.context.post.length, 2);
     t.end();
@@ -57,13 +69,13 @@ test('should not share options between stackman functions', function (t) {
   var cb1 = next();
   var cb2 = next();
   stackman({ context: 1 })(err, function (stack) {
-    var frame = stack[0];
+    var frame = stack.frames[0];
     t.equal(frame.context.pre.length, 1);
     t.equal(frame.context.post.length, 1);
     cb1();
   });
   stackman({ context: 2 })(err, function (stack) {
-    var frame = stack[0];
+    var frame = stack.frames[0];
     t.equal(frame.context.pre.length, 2);
     t.equal(frame.context.post.length, 2);
     cb2();
