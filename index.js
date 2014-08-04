@@ -30,6 +30,7 @@ module.exports = function (options) {
 
     stack.forEach(function (callsite) {
       callsite.getRelativeFileName = getRelativeFileName.bind(callsite);
+      callsite.getTypeNameSafely = getTypeNameSafely.bind(callsite);
       callsite.getFunctionNameSanitized = getFunctionNameSanitized.bind(callsite);
       callsite.getModuleName = getModuleName.bind(callsite);
       callsite.isApp = isApp.bind(callsite);
@@ -83,16 +84,23 @@ var getRelativeFileName = function () {
   return !~filename.indexOf(root) ? filename : filename.substr(root.length);
 };
 
-var getFunctionNameSanitized = function () {
+var getTypeNameSafely = function () {
   try {
-    return this.getFunctionName() ||
-           this.getTypeName() + '.' + (this.getMethodName() || '<anonymous>');
+    return this.getTypeName();
   } catch (e) {
     // This seems to happen sometimes when using 'use strict',
     // stemming from `getTypeName`.
     // [TypeError: Cannot read property 'constructor' of undefined]
-    return '<anonymous>';
+    return null;
   }
+};
+
+var getFunctionNameSanitized = function () {
+  var fnName = this.getFunctionName();
+  if (fnName) return fnName;
+  var typeName = this.getTypeNameSafely();
+  if (typeName) return typeName + '.' + (this.getMethodName() || '<anonymous>');
+  return '<anonymous>';
 };
 
 var getModuleName = function () {

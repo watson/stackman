@@ -74,6 +74,7 @@ important properties:
 
 #### Custom methods
 
+- `callsite.getTypeNameSafely()` - A safer version of `callsite.getTypeName()` as this safely handles an exception that sometimes is thrown when using `"use strict"`. Otherwise it returns the type of this as a string. This is the name of the function stored in the constructor field of this, if available, otherwise the object's [[Class]] internal property
 - `callsite.getRelativeFileName()` - Returns a filename realtive to `process.cwd()`
 - `callsite.getFunctionNameSanitized()` - Guaranteed to always return the most meaningful function name. If none can be determined, the string `<anonymous>` will be returned
 - `callsite.getModuleName()` - Returns the name of the module if `isModule()` is true

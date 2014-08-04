@@ -5,6 +5,18 @@ var test = require('tape');
 var afterAll = require('after-all');
 var stackman = require('./');
 
+test('should override getTypeName() and safely catch exception', function (t) {
+  process.nextTick(function () {
+    var err = new Error('foo');
+    stackman()(err, function (stack) {
+      var frame =stack.frames[0];
+      var name = frame.getFunctionNameSanitized();
+      t.equal(name, '<anonymous>', 'should safely catch exception');
+      t.end();
+    });
+  });
+});
+
 test('should call the callback with a stack object', function (t) {
   var err = new Error();
   stackman()(err, function (stack) {
