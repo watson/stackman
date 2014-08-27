@@ -9,7 +9,7 @@ test('should override getTypeName() and safely catch exception', function (t) {
   process.nextTick(function () {
     var err = new Error('foo');
     stackman()(err, function (stack) {
-      var frame =stack.frames[0];
+      var frame = stack.frames[0];
       var name = frame.getFunctionNameSanitized();
       t.equal(name, '<anonymous>', 'should safely catch exception');
       t.end();

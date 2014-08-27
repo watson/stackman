@@ -14,10 +14,9 @@ module.exports = function (options) {
 
   var parser = function (err, callback) {
     var stack = stackback(err),
-        cache = {},
-        outstanding, next;
+        cache = {};
 
-    next = afterAll(function () {
+    var next = afterAll(function () {
       callback({
         properties: getProperties(err),
         frames: stack
@@ -25,8 +24,6 @@ module.exports = function (options) {
     });
 
     if (!validStack(stack)) return next()();
-
-    outstanding = stack.length;
 
     stack.forEach(function (callsite) {
       callsite.getRelativeFileName = getRelativeFileName.bind(callsite);
