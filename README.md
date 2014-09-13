@@ -4,7 +4,7 @@ Give Stackman an error and he will give an array of stack frames with
 extremely detailed information for each frame in the stack trace.
 
 With Stackman you get access to the actual source code and surrounding
-lines for where the error occured, you get to know if it happended
+lines for where the error occurred, you get to know if it happended
 inside a 3rd party module, in Node.js or in your own code. For a full
 list of information, check out the API below.
 
