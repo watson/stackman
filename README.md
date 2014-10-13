@@ -34,6 +34,27 @@ stackman(err, function (stack) {
 });
 ```
 
+## Gotchas
+
+### `error.stack`
+
+This works because V8 (the JavaScript engine behind Node.js) allows us
+to hook into the stack trace generator function before that stack trace
+is generated. It's triggered by accessing the `.stack` property on the
+Error object, so please don't do that before parsing the error to
+stackman, else this will not work!
+
+If you want to output the regular stack trace, just do so after parsing
+it to stackman:
+
+```javascript
+// first call stackman with the error
+stackman(err, ...);
+
+// then you can print out the stack trace
+console.log(err.stack);
+```
+
 ## API
 
 ### Module
