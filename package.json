@@ -12,7 +12,7 @@
     "tape": "^4.0.0"
   },
   "scripts": {
-    "test": "node test/test.js && node test/longjohn.js"
+    "test": "tape test/test.js && tape test/longjohn.js"
   },
   "repository": {
     "type": "git",
