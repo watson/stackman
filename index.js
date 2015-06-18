@@ -6,17 +6,26 @@ var afterAll = require('after-all')
 
 var LINES_OF_CONTEXT = 7
 
-module.exports = function (options) {
-  if (options instanceof Error) throw new Error('Stackman not initialized yet. Please do so first and parse the error to the returned function instead')
+module.exports = function (opts) {
+  if (opts instanceof Error) throw new Error('Stackman not initialized yet. Please do so first and parse the error to the returned function instead')
 
-  var lines_of_context = (options || {}).context || LINES_OF_CONTEXT
+  var lines_of_context = (opts || {}).context || LINES_OF_CONTEXT
 
-  var parser = function (err, callback) {
+  var parseLines = function (lines, callsite) {
+    var lineno = callsite.getLineNumber()
+    return {
+      pre: lines.slice(Math.max(0, lineno - (lines_of_context + 1)), lineno - 1),
+      line: lines[lineno - 1],
+      post: lines.slice(lineno, lineno + lines_of_context)
+    }
+  }
+
+  return function (err, cb) {
     var stack = stackback(err)
     var cache = {}
 
     var next = afterAll(function () {
-      callback({
+      cb({
         properties: getProperties(err),
         frames: stack
       })
@@ -33,15 +42,15 @@ module.exports = function (options) {
       callsite.isModule = isModule.bind(callsite)
       callsite.isNode = isNode.bind(callsite)
 
-      var cb = next()
+      var done = next()
 
-      if (callsite.isNode()) return cb() // internal Node files are not full path names. Ignore them.
+      if (callsite.isNode()) return done() // internal Node files are not full path names. Ignore them.
 
       var filename = callsite.getFileName() || ''
 
       if (filename in cache) {
         callsite.context = parseLines(cache[filename], callsite)
-        cb()
+        done()
       } else {
         fs.readFile(filename, { encoding: 'utf8' }, function (err, data) {
           if (!err) {
@@ -49,22 +58,12 @@ module.exports = function (options) {
             cache[filename] = data
             callsite.context = parseLines(data, callsite)
           }
-          cb()
+          done()
         })
       }
     })
   }
 
-  var parseLines = function (lines, callsite) {
-    var lineno = callsite.getLineNumber()
-    return {
-      pre: lines.slice(Math.max(0, lineno - (lines_of_context + 1)), lineno - 1),
-      line: lines[lineno - 1],
-      post: lines.slice(lineno, lineno + lines_of_context)
-    }
-  }
-
-  return parser
 }
 
 var validStack = function (stack) {
