@@ -8,10 +8,11 @@
     "stackback": "0.0.2"
   },
   "devDependencies": {
+    "longjohn": "^0.2.4",
     "tape": "^4.0.0"
   },
   "scripts": {
-    "test": "node test.js"
+    "test": "node test/test.js && node test/longjohn.js"
   },
   "repository": {
     "type": "git",

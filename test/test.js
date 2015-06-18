@@ -3,7 +3,7 @@
 var fs = require('fs');
 var test = require('tape');
 var afterAll = require('after-all');
-var Stackman = require('./');
+var Stackman = require('../');
 
 test('should override getTypeName() and safely catch exception', function (t) {
   process.nextTick(function () {
