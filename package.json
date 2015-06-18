@@ -20,7 +20,9 @@
   },
   "keywords": [
     "v8",
+    "stack",
     "stacktrace",
+    "stackframe",
     "callsite",
     "debug",
     "log",
