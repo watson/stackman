@@ -1,137 +1,136 @@
-'use strict';
+'use strict'
 
-var fs = require('fs');
-var stackback = require('stackback');
-var afterAll = require('after-all');
+var fs = require('fs')
+var stackback = require('stackback')
+var afterAll = require('after-all')
 
-var LINES_OF_CONTEXT = 7;
+var LINES_OF_CONTEXT = 7
 
 module.exports = function (options) {
-  if (options instanceof Error)
-    throw new Error('Stackman not initialized yet. Please do so first and parse the error to the returned function instead');
+  if (options instanceof Error) throw new Error('Stackman not initialized yet. Please do so first and parse the error to the returned function instead')
 
-  var lines_of_context = (options || {}).context || LINES_OF_CONTEXT;
+  var lines_of_context = (options || {}).context || LINES_OF_CONTEXT
 
   var parser = function (err, callback) {
-    var stack = stackback(err),
-        cache = {};
+    var stack = stackback(err)
+    var cache = {}
 
     var next = afterAll(function () {
       callback({
         properties: getProperties(err),
         frames: stack
-      });
-    });
+      })
+    })
 
-    if (!validStack(stack)) return next()();
+    if (!validStack(stack)) return next()()
 
     stack.forEach(function (callsite) {
-      callsite.getRelativeFileName = getRelativeFileName.bind(callsite);
-      callsite.getTypeNameSafely = getTypeNameSafely.bind(callsite);
-      callsite.getFunctionNameSanitized = getFunctionNameSanitized.bind(callsite);
-      callsite.getModuleName = getModuleName.bind(callsite);
-      callsite.isApp = isApp.bind(callsite);
-      callsite.isModule = isModule.bind(callsite);
-      callsite.isNode = isNode.bind(callsite);
+      callsite.getRelativeFileName = getRelativeFileName.bind(callsite)
+      callsite.getTypeNameSafely = getTypeNameSafely.bind(callsite)
+      callsite.getFunctionNameSanitized = getFunctionNameSanitized.bind(callsite)
+      callsite.getModuleName = getModuleName.bind(callsite)
+      callsite.isApp = isApp.bind(callsite)
+      callsite.isModule = isModule.bind(callsite)
+      callsite.isNode = isNode.bind(callsite)
 
-      var cb = next();
+      var cb = next()
 
-      if (callsite.isNode()) return cb(); // internal Node files are not full path names. Ignore them.
+      if (callsite.isNode()) return cb() // internal Node files are not full path names. Ignore them.
 
-      var filename = callsite.getFileName() || '';
+      var filename = callsite.getFileName() || ''
 
       if (filename in cache) {
-        callsite.context = parseLines(cache[filename], callsite);
-        cb();
+        callsite.context = parseLines(cache[filename], callsite)
+        cb()
       } else {
         fs.readFile(filename, { encoding: 'utf8' }, function (err, data) {
           if (!err) {
-            data = data.split(/\r?\n/);
-            cache[filename] = data;
-            callsite.context = parseLines(data, callsite);
+            data = data.split(/\r?\n/)
+            cache[filename] = data
+            callsite.context = parseLines(data, callsite)
           }
-          cb();
-        });
+          cb()
+        })
       }
-    });
-  };
+    })
+  }
 
   var parseLines = function (lines, callsite) {
-    var lineno = callsite.getLineNumber();
+    var lineno = callsite.getLineNumber()
     return {
       pre: lines.slice(Math.max(0, lineno - (lines_of_context + 1)), lineno - 1),
       line: lines[lineno - 1],
       post: lines.slice(lineno, lineno + lines_of_context)
-    };
-  };
+    }
+  }
 
-  return parser;
-};
+  return parser
+}
 
 var validStack = function (stack) {
   return Array.isArray(stack) &&
          typeof stack[0] === 'object' &&
-         typeof stack[0].getFileName === 'function';
-};
+         typeof stack[0].getFileName === 'function'
+}
 
 var getRelativeFileName = function () {
-  var filename = this.getFileName();
-  if (!filename) return;
-  var root = process.cwd() + '/';
-  return !~filename.indexOf(root) ? filename : filename.substr(root.length);
-};
+  var filename = this.getFileName()
+  if (!filename) return
+  var root = process.cwd() + '/'
+  return !~filename.indexOf(root) ? filename : filename.substr(root.length)
+}
 
 var getTypeNameSafely = function () {
   try {
-    return this.getTypeName();
+    return this.getTypeName()
   } catch (e) {
     // This seems to happen sometimes when using 'use strict',
     // stemming from `getTypeName`.
     // [TypeError: Cannot read property 'constructor' of undefined]
-    return null;
+    return null
   }
-};
+}
 
 var getFunctionNameSanitized = function () {
-  var fnName = this.getFunctionName();
-  if (fnName) return fnName;
-  var typeName = this.getTypeNameSafely();
-  if (typeName) return typeName + '.' + (this.getMethodName() || '<anonymous>');
-  return '<anonymous>';
-};
+  var fnName = this.getFunctionName()
+  if (fnName) return fnName
+  var typeName = this.getTypeNameSafely()
+  if (typeName) return typeName + '.' + (this.getMethodName() || '<anonymous>')
+  return '<anonymous>'
+}
 
 var getModuleName = function () {
-  var filename = this.getFileName() || '';
-  var match = filename.match(/.*node_modules\/([^\/]*)/);
-  if (match) return match[1];
+  var filename = this.getFileName() || ''
+  var match = filename.match(/.*node_modules\/([^\/]*)/)
+  if (match) return match[1]
 }
 
 var isApp = function () {
   return !this.isNode() && !~(this.getFileName() || '').indexOf('node_modules/')
-};
+}
 
 var isModule = function () {
-  return !!~(this.getFileName() || '').indexOf('node_modules/');
-};
+  return !!~(this.getFileName() || '').indexOf('node_modules/')
+}
 
 var isNode = function () {
-  if (this.isNative()) return true;
-  var filename = this.getFileName() || '';
-  return (filename[0] !== '/' && filename[0] !== '.');
-};
+  if (this.isNative()) return true
+  var filename = this.getFileName() || ''
+  return (filename[0] !== '/' && filename[0] !== '.')
+}
 
 var getProperties = function (err) {
-  var properties = {};
+  var properties = {}
   Object.keys(err).forEach(function (key) {
-    if (key === 'stack') return; // 'stack' seems to be enumerable in Node 0.11
-    var val = err[key];
+    if (key === 'stack') return // 'stack' seems to be enumerable in Node 0.11
+    var val = err[key]
     switch (typeof val) {
       case 'function':
       case 'object':
-        return;
+        return
       default:
-        properties[key] = val;
+        properties[key] = val
     }
-  });
-  return properties;
-};
+  })
+  return properties
+}

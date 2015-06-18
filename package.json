@@ -9,10 +9,11 @@
   },
   "devDependencies": {
     "longjohn": "^0.2.4",
+    "standard": "^4.3.1",
     "tape": "^4.0.0"
   },
   "scripts": {
-    "test": "tape test/test.js && tape test/longjohn.js"
+    "test": "standard && tape test/test.js && tape test/longjohn.js"
   },
   "repository": {
     "type": "git",

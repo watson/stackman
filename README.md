@@ -8,7 +8,8 @@ lines for where the error occurred, you get to know if it happened
 inside a 3rd party module, in Node.js or in your own code. For a full
 list of information, check out the API below.
 
-[![build status](https://secure.travis-ci.org/watson/stackman.png)](http://travis-ci.org/watson/stackman)
+[![Build status](https://travis-ci.org/watson/stackman.svg?branch=master)](https://travis-ci.org/watson/stackman)
+[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://github.com/feross/standard)
 
 ## Install
 
