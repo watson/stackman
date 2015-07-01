@@ -1,6 +1,6 @@
 {
   "name": "stackman",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Enhance an error stacktrace with code excerpts and other goodies",
   "main": "index.js",
   "dependencies": {
@@ -35,5 +35,9 @@
   "bugs": {
     "url": "https://github.com/watson/stackman/issues"
   },
-  "homepage": "https://github.com/watson/stackman"
+  "homepage": "https://github.com/watson/stackman",
+  "coordinates": [
+    18.4786244,
+    -69.9548324
+  ]
 }
