@@ -107,7 +107,7 @@ important properties:
 #### Methods inherited from V8
 
 The follwoing methods are inherited from the [V8 stack trace
-API](https://code.google.com/p/v8/wiki/JavaScriptStackTraceApi).
+API](https://code.google.com/p/v8-wiki/wiki/JavaScriptStackTraceApi).
 
 - `callsite.getThis()` - returns the value of this
 - `callsite.getTypeName()` - returns the type of this as a string. This is the name of the function stored in the constructor field of this, if available, otherwise the object's [[Class]] internal property.
