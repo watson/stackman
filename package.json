@@ -25,6 +25,7 @@
     "stacktrace",
     "stackframe",
     "callsite",
+    "callsites",
     "debug",
     "log",
     "error",
