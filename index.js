@@ -1,7 +1,7 @@
 'use strict'
 
 var fs = require('fs')
-var stackback = require('stackback')
+var callsites = require('error-callsites')
 var afterAll = require('after-all')
 
 var LINES_OF_CONTEXT = 7
@@ -21,7 +21,7 @@ module.exports = function (opts) {
   }
 
   return function (err, cb) {
-    var stack = stackback(err)
+    var stack = callsites(err)
     var cache = {}
 
     var next = afterAll(function () {
