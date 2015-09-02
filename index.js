@@ -125,11 +125,13 @@ var getProperties = function (err) {
     var val = err[key]
     switch (typeof val) {
       case 'function':
-      case 'object':
         return
-      default:
-        properties[key] = val
+      case 'object':
+        // ignore all objects except Dates
+        if (typeof val.toISOString !== 'function') return
+        val = val.toISOString()
     }
+    properties[key] = val
   })
   return properties
 }
