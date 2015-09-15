@@ -65,7 +65,6 @@ module.exports = function (opts) {
       }
     })
   }
-
 }
 
 var validStack = function (stack) {
