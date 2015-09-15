@@ -78,22 +78,27 @@ test('should respect the context option', function (t) {
 })
 
 test('should not share options between stackman functions', function (t) {
-  var err = new Error()
+  var err1 = new Error()
+  var err2 = new Error()
   var next = afterAll(t.end)
   var cb1 = next()
   var cb2 = next()
   var s1 = Stackman({ context: 1 })
   var s2 = Stackman({ context: 2 })
-  s1(err, function (stack) {
-    var frame = stack.frames[0]
-    t.equal(frame.context.pre.length, 1)
-    t.equal(frame.context.post.length, 1)
-    cb1()
+  s1(err1, function (stack) {
+    setTimeout(function () {
+      var frame = stack.frames[0]
+      t.equal(frame.context.pre.length, 1)
+      t.equal(frame.context.post.length, 1)
+      cb1()
+    }, 50)
   })
-  s2(err, function (stack) {
-    var frame = stack.frames[0]
-    t.equal(frame.context.pre.length, 2)
-    t.equal(frame.context.post.length, 2)
-    cb2()
+  s2(err2, function (stack) {
+    setTimeout(function () {
+      var frame = stack.frames[0]
+      t.equal(frame.context.pre.length, 2)
+      t.equal(frame.context.post.length, 2)
+      cb2()
+    }, 50)
   })
 })
