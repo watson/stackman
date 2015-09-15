@@ -5,7 +5,8 @@
   "main": "index.js",
   "dependencies": {
     "after-all": "^2.0.2",
-    "error-callsites": "^1.0.0"
+    "error-callsites": "^1.0.0",
+    "semver": "^5.0.3"
   },
   "devDependencies": {
     "longjohn": "^0.2.8",

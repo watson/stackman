@@ -1,10 +1,12 @@
 'use strict'
 
 var fs = require('fs')
+var semver = require('semver')
 var callsites = require('error-callsites')
 var afterAll = require('after-all')
 
 var LINES_OF_CONTEXT = 7
+var READ_FILE_OPTS = semver.lt(process.version, '0.9.11') ? 'utf8' : { encoding: 'utf8' }
 
 module.exports = function (opts) {
   if (opts instanceof Error) throw new Error('Stackman not initialized yet. Please do so first and parse the error to the returned function instead')
@@ -52,7 +54,7 @@ module.exports = function (opts) {
         callsite.context = parseLines(cache[filename], callsite)
         done()
       } else {
-        fs.readFile(filename, { encoding: 'utf8' }, function (err, data) {
+        fs.readFile(filename, READ_FILE_OPTS, function (err, data) {
           if (!err) {
             data = data.split(/\r?\n/)
             cache[filename] = data
