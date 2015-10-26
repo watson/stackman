@@ -70,8 +70,8 @@ var stackman = require('stackman')(options);
 
 Options:
 
-- `context` - The lines of context to be loaded on each side of the
-  callsite line (default: 7)
+- `context` - Number of lines of context to be loaded on each side of
+  the callsite line (default: `7`)
 
 The `stackman` function takes two arguments:
 
