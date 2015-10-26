@@ -72,6 +72,9 @@ Options:
 
 - `context` - Number of lines of context to be loaded on each side of
   the callsite line (default: `7`)
+- `sync` - Set to `true` if you want stackman to behave synchronously.
+  If set, the result will be returned and the callback will be ignored
+  (default: `false`)
 
 The `stackman` function takes two arguments:
 

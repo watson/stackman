@@ -12,7 +12,9 @@ var READ_FILE_OPTS = semver.lt(process.version, '0.9.11') ? 'utf8' : { encoding:
 module.exports = function (opts) {
   if (opts instanceof Error) throw new Error('Stackman not initialized yet. Please do so first and parse the error to the returned function instead')
 
-  var lines_of_context = (opts || {}).context || LINES_OF_CONTEXT
+  if (!opts) opts = {}
+  var lines_of_context = opts.context || LINES_OF_CONTEXT
+  var sync = opts.sync
 
   var parseLines = function (lines, callsite) {
     var lineno = callsite.getLineNumber()
@@ -25,15 +27,18 @@ module.exports = function (opts) {
 
   return function (err, cb) {
     var stack = callsites(err)
+    var result = {
+      properties: getProperties(err),
+      frames: stack
+    }
 
-    var next = afterAll(function () {
-      cb({
-        properties: getProperties(err),
-        frames: stack
+    if (!sync) {
+      var next = afterAll(function () {
+        cb(result)
       })
-    })
+    }
 
-    if (!validStack(stack)) return
+    if (!validStack(stack)) return sync ? result : undefined
 
     stack.forEach(function (callsite) {
       callsite.getRelativeFileName = getRelativeFileName.bind(callsite)
@@ -50,6 +55,13 @@ module.exports = function (opts) {
 
       if (cache.has(filename)) {
         callsite.context = parseLines(cache.get(filename), callsite)
+      } else if (sync) {
+        try {
+          var data = fs.readFileSync(filename, READ_FILE_OPTS)
+        } catch (e) { return }
+        data = data.split(/\r?\n/)
+        cache.set(filename, data)
+        callsite.context = parseLines(data, callsite)
       } else {
         var done = next()
         fs.readFile(filename, READ_FILE_OPTS, function (err, data) {
@@ -62,6 +74,8 @@ module.exports = function (opts) {
         })
       }
     })
+
+    return sync ? result : undefined
   }
 }
 
