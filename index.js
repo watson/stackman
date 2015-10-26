@@ -33,7 +33,7 @@ module.exports = function (opts) {
       })
     })
 
-    if (!validStack(stack)) return next()()
+    if (!validStack(stack)) return
 
     stack.forEach(function (callsite) {
       callsite.getRelativeFileName = getRelativeFileName.bind(callsite)
@@ -44,16 +44,14 @@ module.exports = function (opts) {
       callsite.isModule = isModule.bind(callsite)
       callsite.isNode = isNode.bind(callsite)
 
-      var done = next()
-
-      if (callsite.isNode()) return done() // internal Node files are not full path names. Ignore them.
+      if (callsite.isNode()) return // internal Node files are not full path names. Ignore them.
 
       var filename = callsite.getFileName() || ''
 
       if (cache.has(filename)) {
         callsite.context = parseLines(cache.get(filename), callsite)
-        done()
       } else {
+        var done = next()
         fs.readFile(filename, READ_FILE_OPTS, function (err, data) {
           if (!err) {
             data = data.split(/\r?\n/)
