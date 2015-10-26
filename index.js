@@ -4,6 +4,7 @@ var fs = require('fs')
 var semver = require('semver')
 var callsites = require('error-callsites')
 var afterAll = require('after-all')
+var cache = require('lru-cache')({ max: 500 })
 
 var LINES_OF_CONTEXT = 7
 var READ_FILE_OPTS = semver.lt(process.version, '0.9.11') ? 'utf8' : { encoding: 'utf8' }
@@ -24,7 +25,6 @@ module.exports = function (opts) {
 
   return function (err, cb) {
     var stack = callsites(err)
-    var cache = {}
 
     var next = afterAll(function () {
       cb({
@@ -50,14 +50,14 @@ module.exports = function (opts) {
 
       var filename = callsite.getFileName() || ''
 
-      if (filename in cache) {
-        callsite.context = parseLines(cache[filename], callsite)
+      if (cache.has(filename)) {
+        callsite.context = parseLines(cache.get(filename), callsite)
         done()
       } else {
         fs.readFile(filename, READ_FILE_OPTS, function (err, data) {
           if (!err) {
             data = data.split(/\r?\n/)
-            cache[filename] = data
+            cache.set(filename, data)
             callsite.context = parseLines(data, callsite)
           }
           done()
