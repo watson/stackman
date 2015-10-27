@@ -114,3 +114,27 @@ test('sync', function (t) {
   t.equal(typeof stack.frames[0].getFileName, 'function')
   t.end()
 })
+
+test('filter string', function (t) {
+  var err = new Error()
+  var opts = {
+    filter: 'stackman'
+  }
+  Stackman(opts)(err, function (stack) {
+    t.equal(stack.frames.length, 1)
+    t.ok(stack.frames[0].isNode())
+    t.end()
+  })
+})
+
+test('filter array', function (t) {
+  var err = new Error()
+  var opts = {
+    filter: ['node_modules/tape/lib/test.js', 'node_modules/tape/lib/results.js']
+  }
+  Stackman(opts)(err, function (stack) {
+    t.equal(stack.frames.length, 2)
+    t.ok(stack.frames[0].getFileName().indexOf('/test/test.js') !== -1)
+    t.end()
+  })
+})

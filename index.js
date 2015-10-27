@@ -16,6 +16,22 @@ module.exports = function (opts) {
   var lines_of_context = opts.context || LINES_OF_CONTEXT
   var sync = opts.sync
 
+  var stackFilter
+  if (opts.filter === undefined) {
+    // noop
+  } else if (typeof opts.filter === 'string') {
+    stackFilter = function (callsite) {
+      return callsite.getFileName().indexOf(opts.filter) === -1
+    }
+  } else if (Array.isArray(opts.filter)) {
+    stackFilter = function (callsite) {
+      var path = callsite.getFileName()
+      return !opts.filter.some(function (segment) {
+        return path.indexOf(segment) !== -1
+      })
+    }
+  }
+
   var parseLines = function (lines, callsite) {
     var lineno = callsite.getLineNumber()
     return {
@@ -27,6 +43,9 @@ module.exports = function (opts) {
 
   return function (err, cb) {
     var stack = callsites(err)
+
+    if (stackFilter && Array.isArray(stack)) stack = stack.filter(stackFilter)
+
     var result = {
       properties: getProperties(err),
       frames: stack
