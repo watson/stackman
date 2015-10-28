@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "after-all": "^2.0.2",
+    "async-cache": "^1.0.0",
     "error-callsites": "^1.0.0",
     "lru-cache": "^2.7.0",
     "semver": "^5.0.3"

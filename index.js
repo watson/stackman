@@ -4,7 +4,14 @@ var fs = require('fs')
 var semver = require('semver')
 var callsites = require('error-callsites')
 var afterAll = require('after-all')
-var cache = require('lru-cache')({ max: 500 })
+
+var syncCache = require('lru-cache')({ max: 500 })
+var asyncCache = require('async-cache')({
+  max: 500,
+  load: function (file, cb) {
+    fs.readFile(file, READ_FILE_OPTS, cb)
+  }
+})
 
 var LINES_OF_CONTEXT = 7
 var READ_FILE_OPTS = semver.lt(process.version, '0.9.11') ? 'utf8' : { encoding: 'utf8' }
@@ -72,25 +79,24 @@ module.exports = function (opts) {
 
       var filename = callsite.getFileName() || ''
 
-      if (cache.has(filename)) {
-        callsite.context = parseLines(cache.get(filename), callsite)
-      } else if (sync) {
-        try {
-          var data = fs.readFileSync(filename, READ_FILE_OPTS)
-        } catch (e) { return }
-        data = data.split(/\r?\n/)
-        cache.set(filename, data)
-        callsite.context = parseLines(data, callsite)
-      } else {
+      if (!sync) {
         var done = next()
-        fs.readFile(filename, READ_FILE_OPTS, function (err, data) {
+        asyncCache.get(filename, function (err, data) {
           if (!err) {
             data = data.split(/\r?\n/)
-            cache.set(filename, data)
             callsite.context = parseLines(data, callsite)
           }
           done()
         })
+      } else if (syncCache.has(filename)) {
+        callsite.context = parseLines(syncCache.get(filename), callsite)
+      } else {
+        try {
+          var data = fs.readFileSync(filename, READ_FILE_OPTS)
+        } catch (e) { return }
+        data = data.split(/\r?\n/)
+        syncCache.set(filename, data)
+        callsite.context = parseLines(data, callsite)
       }
     })
 
