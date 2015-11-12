@@ -161,6 +161,7 @@ var getProperties = function (err) {
   Object.keys(err).forEach(function (key) {
     if (key === 'stack') return // 'stack' seems to be enumerable in Node 0.11
     var val = err[key]
+    if (val === null) return // null is typeof object and well break the switch below
     switch (typeof val) {
       case 'function':
         return
