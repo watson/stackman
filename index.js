@@ -28,7 +28,8 @@ module.exports = function (opts) {
     // noop
   } else if (typeof opts.filter === 'string') {
     stackFilter = function (callsite) {
-      return callsite.getFileName().indexOf(opts.filter) === -1
+      var filename = callsite.getFileName()
+      return filename ? filename.indexOf(opts.filter) === -1 : true
     }
   } else if (Array.isArray(opts.filter)) {
     stackFilter = function (callsite) {
