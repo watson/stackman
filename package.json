@@ -7,13 +7,13 @@
     "after-all": "^2.0.2",
     "async-cache": "^1.0.0",
     "error-callsites": "^1.0.0",
-    "lru-cache": "^2.7.0",
-    "semver": "^5.0.3"
+    "lru-cache": "^3.2.0",
+    "semver": "^5.1.0"
   },
   "devDependencies": {
     "longjohn": "=0.2.9",
-    "standard": "^5.1.1",
-    "tape": "^4.2.0"
+    "standard": "^5.4.1",
+    "tape": "^4.2.2"
   },
   "scripts": {
     "test": "standard && tape test/test.js && tape test/longjohn.js"
