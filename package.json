@@ -6,6 +6,7 @@
   "dependencies": {
     "after-all": "^2.0.2",
     "async-cache": "^1.0.0",
+    "debug": "^2.2.0",
     "error-callsites": "^1.0.0",
     "lru-cache": "^3.2.0",
     "semver": "^5.1.0"

@@ -157,6 +157,10 @@ API](https://code.google.com/p/v8-wiki/wiki/JavaScriptStackTraceApi).
 - `callsite.isNative()` - is this call in native V8 code?
 - `callsite.isConstructor()` - is this a constructor call?
 
+## Troubleshooting
+
+To enable debug mode, set the environment variable `DEBUG=stackman`.
+
 ## License
 
 MIT

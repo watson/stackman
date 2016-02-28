@@ -4,11 +4,13 @@ var fs = require('fs')
 var semver = require('semver')
 var callsites = require('error-callsites')
 var afterAll = require('after-all')
+var debug = require('debug')('stackman')
 
 var syncCache = require('lru-cache')({ max: 500 })
 var asyncCache = require('async-cache')({
   max: 500,
   load: function (file, cb) {
+    debug('reading ' + file)
     fs.readFile(file, READ_FILE_OPTS, cb)
   }
 })
@@ -83,7 +85,9 @@ module.exports = function (opts) {
       if (!sync) {
         var done = next()
         asyncCache.get(filename, function (err, data) {
-          if (!err) {
+          if (err) {
+            debug('error reading ' + filename + ': ' + err.message)
+          } else {
             data = data.split(/\r?\n/)
             callsite.context = parseLines(data, callsite)
           }
@@ -92,9 +96,13 @@ module.exports = function (opts) {
       } else if (syncCache.has(filename)) {
         callsite.context = parseLines(syncCache.get(filename), callsite)
       } else {
+        debug('reading ' + filename)
         try {
           var data = fs.readFileSync(filename, READ_FILE_OPTS)
-        } catch (e) { return }
+        } catch (e) {
+          debug('error reading ' + filename + ': ' + e.message)
+          return
+        }
         data = data.split(/\r?\n/)
         syncCache.set(filename, data)
         callsite.context = parseLines(data, callsite)
