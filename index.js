@@ -1,6 +1,7 @@
 'use strict'
 
 var fs = require('fs')
+var path = require('path')
 var semver = require('semver')
 var callsites = require('error-callsites')
 var afterAll = require('after-all')
@@ -17,6 +18,8 @@ var asyncCache = require('async-cache')({
 
 var LINES_OF_CONTEXT = 7
 var READ_FILE_OPTS = semver.lt(process.version, '0.9.11') ? 'utf8' : { encoding: 'utf8' }
+var ESCAPED_REGEX_PATH_SEP = path.sep === '/' ? '\/' : '\\\\'
+var MODULE_FOLDER_REGEX = new RegExp('.*node_modules' + ESCAPED_REGEX_PATH_SEP + '([^' + ESCAPED_REGEX_PATH_SEP + ']*)')
 
 module.exports = function (opts) {
   if (opts instanceof Error) throw new Error('Stackman not initialized yet. Please do so first and parse the error to the returned function instead')
@@ -122,7 +125,8 @@ var validStack = function (stack) {
 var getRelativeFileName = function () {
   var filename = this.getFileName()
   if (!filename) return
-  var root = process.cwd() + '/'
+  var root = process.cwd()
+  if (root[root.length - 1] !== path.sep) root += path.sep
   return !~filename.indexOf(root) ? filename : filename.substr(root.length)
 }
 
@@ -147,22 +151,22 @@ var getFunctionNameSanitized = function () {
 
 var getModuleName = function () {
   var filename = this.getFileName() || ''
-  var match = filename.match(/.*node_modules\/([^\/]*)/)
+  var match = filename.match(MODULE_FOLDER_REGEX)
   if (match) return match[1]
 }
 
 var isApp = function () {
-  return !this.isNode() && !~(this.getFileName() || '').indexOf('node_modules/')
+  return !this.isNode() && !~(this.getFileName() || '').indexOf('node_modules' + path.sep)
 }
 
 var isModule = function () {
-  return !!~(this.getFileName() || '').indexOf('node_modules/')
+  return !!~(this.getFileName() || '').indexOf('node_modules' + path.sep)
 }
 
 var isNode = function () {
   if (this.isNative()) return true
   var filename = this.getFileName() || ''
-  return (filename[0] !== '/' && filename[0] !== '.')
+  return (!path.isAbsolute(filename) && filename[0] !== '.')
 }
 
 var getProperties = function (err) {
