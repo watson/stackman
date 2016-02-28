@@ -7,6 +7,8 @@ var callsites = require('error-callsites')
 var afterAll = require('after-all')
 var debug = require('debug')('stackman')
 
+var isAbsolute = path.isAbsolute || require('path-is-absolute')
+
 var syncCache = require('lru-cache')({ max: 500 })
 var asyncCache = require('async-cache')({
   max: 500,
@@ -166,7 +168,7 @@ var isModule = function () {
 var isNode = function () {
   if (this.isNative()) return true
   var filename = this.getFileName() || ''
-  return (!path.isAbsolute(filename) && filename[0] !== '.')
+  return (!isAbsolute(filename) && filename[0] !== '.')
 }
 
 var getProperties = function (err) {
