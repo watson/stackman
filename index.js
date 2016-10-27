@@ -20,14 +20,14 @@ var asyncCache = require('async-cache')({
 
 var LINES_OF_CONTEXT = 7
 var READ_FILE_OPTS = semver.lt(process.version, '0.9.11') ? 'utf8' : { encoding: 'utf8' }
-var ESCAPED_REGEX_PATH_SEP = path.sep === '/' ? '\/' : '\\\\'
+var ESCAPED_REGEX_PATH_SEP = path.sep === '/' ? '/' : '\\\\'
 var MODULE_FOLDER_REGEX = new RegExp('.*node_modules' + ESCAPED_REGEX_PATH_SEP + '([^' + ESCAPED_REGEX_PATH_SEP + ']*)')
 
 module.exports = function (opts) {
   if (opts instanceof Error) throw new Error('Stackman not initialized yet. Please do so first and parse the error to the returned function instead')
 
   if (!opts) opts = {}
-  var lines_of_context = opts.context || LINES_OF_CONTEXT
+  var linesOfContext = opts.context || LINES_OF_CONTEXT
   var sync = opts.sync
 
   var stackFilter
@@ -50,9 +50,9 @@ module.exports = function (opts) {
   var parseLines = function (lines, callsite) {
     var lineno = callsite.getLineNumber()
     return {
-      pre: lines.slice(Math.max(0, lineno - (lines_of_context + 1)), lineno - 1),
+      pre: lines.slice(Math.max(0, lineno - (linesOfContext + 1)), lineno - 1),
       line: lines[lineno - 1],
-      post: lines.slice(lineno, lineno + lines_of_context)
+      post: lines.slice(lineno, lineno + linesOfContext)
     }
   }
 
