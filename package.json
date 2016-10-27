@@ -5,12 +5,12 @@
   "main": "index.js",
   "dependencies": {
     "after-all": "^2.0.2",
-    "async-cache": "^1.0.0",
+    "async-cache": "^1.1.0",
     "debug": "^2.2.0",
     "error-callsites": "^1.0.0",
     "lru-cache": "^3.2.0",
-    "path-is-absolute": "^1.0.0",
-    "semver": "^5.1.0"
+    "path-is-absolute": "^1.0.1",
+    "semver": "^5.3.0"
   },
   "devDependencies": {
     "longjohn": "=0.2.9",
