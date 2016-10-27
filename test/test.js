@@ -3,6 +3,7 @@
 var fs = require('fs')
 var test = require('tape')
 var afterAll = require('after-all')
+var semver = require('semver')
 var Stackman = require('../')
 
 test('should override getTypeName() and safely catch exception', function (t) {
@@ -121,7 +122,7 @@ test('filter string', function (t) {
     filter: 'stackman'
   }
   Stackman(opts)(err, function (stack) {
-    t.equal(stack.frames.length, 1)
+    t.equal(stack.frames.length, nonStackmanFrames())
     t.ok(stack.frames[0].isNode())
     t.end()
   })
@@ -133,8 +134,16 @@ test('filter array', function (t) {
     filter: ['node_modules/tape/lib/test.js', 'node_modules/tape/lib/results.js']
   }
   Stackman(opts)(err, function (stack) {
-    t.equal(stack.frames.length, 2)
+    t.equal(stack.frames.length, nonStackmanFrames() + 1)
     t.ok(stack.frames[0].getFileName().indexOf('/test/test.js') !== -1)
     t.end()
   })
 })
+
+// The different versions of Node.js have implemented timers with a different
+// number of function calls. This is just a simple hack to get around it.
+function nonStackmanFrames () {
+  if (semver.lt(process.version, '5.0.0')) return 1
+  if (semver.lt(process.version, '6.0.0')) return 2
+  return 3
+}
