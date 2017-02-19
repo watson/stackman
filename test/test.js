@@ -4,6 +4,7 @@ var fs = require('fs')
 var test = require('tape')
 var afterAll = require('after-all')
 var semver = require('semver')
+var generateError = require('./fixtures/generateError')
 var Stackman = require('../')
 
 test('should override getTypeName() and safely catch exception', function (t) {
@@ -51,6 +52,9 @@ test('should add extra functions', function (t) {
     t.equal(typeof frame.isApp, 'function')
     t.equal(typeof frame.isModule, 'function')
     t.equal(typeof frame.isNode, 'function')
+    t.equal(typeof frame.getSourceMappedFileName, 'function')
+    t.equal(typeof frame.getSourceMappedLineNumber, 'function')
+    t.equal(typeof frame.getSourceMappedColumnNumber, 'function')
     t.end()
   })
 })
@@ -138,6 +142,44 @@ test('filter array', function (t) {
     t.ok(stack.frames[0].getFileName().indexOf('/test/test.js') !== -1)
     t.end()
   })
+})
+
+test('sourcemapped location getters', function (t) {
+  var err = generateError()
+  Stackman()(err, function (stack) {
+    t.ok(stack.frames[0].getSourceMappedFileName().indexOf('/generateError.original.js') !== -1)
+    t.equal(stack.frames[0].getSourceMappedLineNumber(), 2)
+    t.equal(stack.frames[0].getSourceMappedColumnNumber(), 53)
+    t.end()
+  })
+})
+
+test('sourcemapped location getters (sync)', function (t) {
+  var err = generateError()
+  var stack = Stackman({ sync: true })(err)
+  t.ok(stack.frames[0].getSourceMappedFileName().indexOf('/generateError.original.js') !== -1)
+  t.equal(stack.frames[0].getSourceMappedLineNumber(), 2)
+  t.equal(stack.frames[0].getSourceMappedColumnNumber(), 53)
+  t.end()
+})
+
+test('sourcemapped location getters fall back if no sourcemap exists', function (t) {
+  var stack = Stackman({ sync: true })(new Error())
+  t.equal(stack.frames[0].getSourceMappedFileName(), __filename)
+  t.equal(stack.frames[0].getSourceMappedLineNumber(), stack.frames[0].getLineNumber())
+  t.equal(stack.frames[0].getSourceMappedColumnNumber(), stack.frames[0].getColumnNumber())
+  t.end()
+})
+
+test('sourcemapped context', function (t) {
+  var err = generateError()
+  var stack = Stackman({ sync: true })(err)
+  t.deepEqual(stack.frames[0].context, {
+    pre: ['// Just a little prefixing line'],
+    line: 'const generateError = (errMessage = \'Some error\') => new Error(errMessage)',
+    post: ['', 'module.exports = generateError', '']
+  })
+  t.end()
 })
 
 // The different versions of Node.js have implemented timers with a different

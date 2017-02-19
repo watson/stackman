@@ -5,6 +5,7 @@ var path = require('path')
 var semver = require('semver')
 var callsites = require('error-callsites')
 var afterAll = require('after-all')
+var sourcemapCallsites = require('sourcemap-decorate-callsites')
 var debug = require('debug')('stackman')
 
 var isAbsolute = path.isAbsolute || require('path-is-absolute')
@@ -35,12 +36,12 @@ module.exports = function (opts) {
     // noop
   } else if (typeof opts.filter === 'string') {
     stackFilter = function (callsite) {
-      var filename = callsite.getFileName()
+      var filename = callsite.sourceMap ? callsite.sourceMap.getFileName() : callsite.getFileName()
       return filename ? filename.indexOf(opts.filter) === -1 : true
     }
   } else if (Array.isArray(opts.filter)) {
     stackFilter = function (callsite) {
-      var path = callsite.getFileName()
+      var path = callsite.sourceMap ? callsite.sourceMap.getFileName() : callsite.getFileName()
       return !opts.filter.some(function (segment) {
         return path.indexOf(segment) !== -1
       })
@@ -48,7 +49,7 @@ module.exports = function (opts) {
   }
 
   var parseLines = function (lines, callsite) {
-    var lineno = callsite.getLineNumber()
+    var lineno = callsite.getSourceMappedLineNumber()
     return {
       pre: lines.slice(Math.max(0, lineno - (linesOfContext + 1)), lineno - 1),
       line: lines[lineno - 1],
@@ -59,6 +60,16 @@ module.exports = function (opts) {
   return function (err, cb) {
     var stack = callsites(err)
 
+    if (sync) {
+      return prepareStack(err, sourcemapCallsites(stack))
+    }
+
+    sourcemapCallsites(stack, function (srcMapErr, sourcemappedStack) {
+      prepareStack(err, sourcemappedStack, cb)
+    })
+  }
+
+  function prepareStack (err, stack, cb) {
     if (stackFilter && Array.isArray(stack)) stack = stack.filter(stackFilter)
 
     var result = {
@@ -82,10 +93,13 @@ module.exports = function (opts) {
       callsite.isApp = isApp.bind(callsite)
       callsite.isModule = isModule.bind(callsite)
       callsite.isNode = isNode.bind(callsite)
+      callsite.getSourceMappedFileName = getSourceMappedFileName.bind(callsite)
+      callsite.getSourceMappedLineNumber = getSourceMappedLineNumber.bind(callsite)
+      callsite.getSourceMappedColumnNumber = getSourceMappedColumnNumber.bind(callsite)
 
       if (callsite.isNode()) return // internal Node files are not full path names. Ignore them.
 
-      var filename = callsite.getFileName() || ''
+      var filename = callsite.getSourceMappedFileName() || ''
 
       if (!sync) {
         var done = next()
@@ -125,11 +139,23 @@ var validStack = function (stack) {
 }
 
 var getRelativeFileName = function () {
-  var filename = this.getFileName()
+  var filename = this.getSourceMappedFileName()
   if (!filename) return
   var root = process.cwd()
   if (root[root.length - 1] !== path.sep) root += path.sep
   return !~filename.indexOf(root) ? filename : filename.substr(root.length)
+}
+
+var getSourceMappedFileName = function () {
+  return this.sourceMap ? this.sourceMap.getFileName() : this.getFileName()
+}
+
+var getSourceMappedLineNumber = function () {
+  return this.sourceMap ? this.sourceMap.getLineNumber() : this.getLineNumber()
+}
+
+var getSourceMappedColumnNumber = function () {
+  return this.sourceMap ? this.sourceMap.getColumnNumber() : this.getColumnNumber()
 }
 
 var getTypeNameSafely = function () {
@@ -152,22 +178,22 @@ var getFunctionNameSanitized = function () {
 }
 
 var getModuleName = function () {
-  var filename = this.getFileName() || ''
+  var filename = this.getSourceMappedFileName() || ''
   var match = filename.match(MODULE_FOLDER_REGEX)
   if (match) return match[1]
 }
 
 var isApp = function () {
-  return !this.isNode() && !~(this.getFileName() || '').indexOf('node_modules' + path.sep)
+  return !this.isNode() && !~(this.getSourceMappedFileName() || '').indexOf('node_modules' + path.sep)
 }
 
 var isModule = function () {
-  return !!~(this.getFileName() || '').indexOf('node_modules' + path.sep)
+  return !!~(this.getSourceMappedFileName() || '').indexOf('node_modules' + path.sep)
 }
 
 var isNode = function () {
   if (this.isNative()) return true
-  var filename = this.getFileName() || ''
+  var filename = this.getSourceMappedFileName() || ''
   return (!isAbsolute(filename) && filename[0] !== '.')
 }
 

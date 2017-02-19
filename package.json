@@ -10,7 +10,8 @@
     "error-callsites": "^1.0.1",
     "lru-cache": "^4.0.1",
     "path-is-absolute": "^1.0.1",
-    "semver": "^5.3.0"
+    "semver": "^5.3.0",
+    "sourcemap-decorate-callsites": "^1.0.0"
   },
   "devDependencies": {
     "longjohn": "=0.2.9",
@@ -45,5 +46,10 @@
   "coordinates": [
     55.6809887,
     12.5643973
-  ]
+  ],
+  "standard": {
+    "ignore": [
+      "/test/fixtures/"
+    ]
+  }
 }

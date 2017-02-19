@@ -124,6 +124,17 @@ important properties:
   node code and not a module inside the node_modules directory)
 - `callsite.isModule()` - Is this inside the node_modules directory?
 - `callsite.isNode()` - Is this inside node core?
+- `callsite.getSourceMappedFileName()` - If this function was defined in a script
+  which includes a source map reference, returns the name of the original script.
+  If a source map doesn't exist, it aliases `getFileName()`
+- `callsite.getSourceMappedLineNumber()` - If this function was defined in a
+  script which includes a source map reference, returns the current line
+  number of the original script. If a source map doesn't exist,
+  it aliases `getLineNumber()`
+- `callsite.getSourceMappedColumnNumber()` - If this function was defined in a
+  script which includes a source map reference, returns the current column
+  number of the original script. If a source map doesn't exist,
+  it aliases `getColumnNumber()`
 
 #### Methods inherited from V8
 
