@@ -21,18 +21,18 @@ npm install stackman
 ## Basic usage
 
 ```javascript
-var stackman = require('stackman')();
+var stackman = require('stackman')()
 
-var err = new Error('Oops!');
+var err = new Error('Oops!')
 
 stackman(err, function (stack) {
   stack.frames.forEach(function (frame) {
-    // output: <example.js:3> var err = new Error('Oops!');
+    // output: <example.js:3> var err = new Error('Oops!')
     console.log('<%s:%s> %s',
       frame.getFileName(),
       frame.getLineNumber(),
-      frame.context.line);
-  });
+      frame.context.line)
+  })
 });
 ```
 
@@ -51,10 +51,10 @@ it to stackman:
 
 ```javascript
 // first call stackman with the error
-stackman(err, ...);
+stackman(err, ...)
 
 // then you can print out the stack trace
-console.log(err.stack);
+console.log(err.stack)
 ```
 
 ## API
