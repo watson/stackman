@@ -4,7 +4,6 @@ var fs = require('fs')
 var path = require('path')
 var semver = require('semver')
 var callsites = require('error-callsites')
-var afterAll = require('after-all')
 var debug = require('debug')('stackman')
 
 var isAbsolute = path.isAbsolute || require('path-is-absolute')
@@ -26,7 +25,6 @@ module.exports = function (opts) {
   if (opts instanceof Error) throw new Error('Stackman not initialized yet. Please do so first and parse the error to the returned function instead')
 
   if (!opts) opts = {}
-  var linesOfContext = opts.context || LINES_OF_CONTEXT
 
   var stackFilter
   if (opts.filter === undefined) {
@@ -45,16 +43,7 @@ module.exports = function (opts) {
     }
   }
 
-  var parseLines = function (lines, callsite) {
-    var lineno = callsite.getLineNumber()
-    return {
-      pre: lines.slice(Math.max(0, lineno - (linesOfContext + 1)), lineno - 1),
-      line: lines[lineno - 1],
-      post: lines.slice(lineno, lineno + linesOfContext)
-    }
-  }
-
-  return function (err, cb) {
+  return function (err) {
     var stack = callsites(err)
 
     if (stackFilter && Array.isArray(stack)) stack = stack.filter(stackFilter)
@@ -64,36 +53,20 @@ module.exports = function (opts) {
       frames: stack
     }
 
-    var next = afterAll(function () {
-      cb(result)
-    })
-
-    if (!validStack(stack)) return
+    if (!validStack(stack)) return result
 
     stack.forEach(function (callsite) {
       callsite.getRelativeFileName = getRelativeFileName.bind(callsite)
       callsite.getTypeNameSafely = getTypeNameSafely.bind(callsite)
       callsite.getFunctionNameSanitized = getFunctionNameSanitized.bind(callsite)
       callsite.getModuleName = getModuleName.bind(callsite)
+      callsite.getSourceContext = getSourceContext.bind(callsite, opts)
       callsite.isApp = isApp.bind(callsite)
       callsite.isModule = isModule.bind(callsite)
       callsite.isNode = isNode.bind(callsite)
-
-      if (callsite.isNode()) return // internal Node files are not full path names. Ignore them.
-
-      var filename = callsite.getFileName() || ''
-
-      var done = next()
-      cache.get(filename, function (err, data) {
-        if (err) {
-          debug('error reading ' + filename + ': ' + err.message)
-        } else {
-          data = data.split(/\r?\n/)
-          callsite.context = parseLines(data, callsite)
-        }
-        done()
-      })
     })
+
+    return result
   }
 }
 
@@ -136,6 +109,25 @@ var getModuleName = function () {
   if (match) return match[1]
 }
 
+var getSourceContext = function (opts, cb) {
+  if (this.isNode()) {
+    return cb(new Error('Can\'t get source context of a Node core callsite'))
+  }
+
+  var callsite = this
+  var filename = this.getFileName() || ''
+
+  cache.get(filename, function (err, data) {
+    if (err) {
+      debug('error reading ' + filename + ': ' + err.message)
+      cb(err)
+    } else {
+      data = data.split(/\r?\n/)
+      cb(null, parseLines(data, callsite, opts))
+    }
+  })
+}
+
 var isApp = function () {
   return !this.isNode() && !~(this.getFileName() || '').indexOf('node_modules' + path.sep)
 }
@@ -148,6 +140,16 @@ var isNode = function () {
   if (this.isNative()) return true
   var filename = this.getFileName() || ''
   return (!isAbsolute(filename) && filename[0] !== '.')
+}
+
+var parseLines = function (lines, callsite, opts) {
+  var linesOfContext = opts.context || LINES_OF_CONTEXT
+  var lineno = callsite.getLineNumber()
+  return {
+    pre: lines.slice(Math.max(0, lineno - (linesOfContext + 1)), lineno - 1),
+    line: lines[lineno - 1],
+    post: lines.slice(lineno, lineno + linesOfContext)
+  }
 }
 
 var getProperties = function (err) {

@@ -11,6 +11,7 @@
     "semver": "^5.3.0"
   },
   "devDependencies": {
+    "after-all": "^2.0.2",
     "longjohn": "=0.2.9",
     "standard": "^8.5.0",
     "tape": "^4.6.2"

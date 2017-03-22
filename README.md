@@ -25,15 +25,13 @@ var stackman = require('stackman')()
 
 var err = new Error('Oops!')
 
-stackman(err, function (stack) {
-  stack.frames.forEach(function (frame) {
-    // output: <example.js:3> var err = new Error('Oops!')
-    console.log('<%s:%s> %s',
-      frame.getFileName(),
-      frame.getLineNumber(),
-      frame.context.line)
-  })
-});
+var stack = stackman(err)
+
+stack.frames.forEach(function (frame) {
+  console.log('Error occured in at %s line %d',
+    frame.getFileName(),
+    frame.getLineNumber())
+})
 ```
 
 ## Gotchas
@@ -51,7 +49,7 @@ it to stackman:
 
 ```javascript
 // first call stackman with the error
-stackman(err, ...)
+stackman(err)
 
 // then you can print out the stack trace
 console.log(err.stack)
@@ -79,17 +77,13 @@ Options:
 - `filter` - Accepts a single path segment or an array of path segments.
   Will filter out any stack frames that matches the given path segments.
 
-The `stackman` function takes two arguments:
-
-- `err` - the error to be parsed
-- `callback` - a callback which will be called with the a stack object
-  when the parsing is completed
+Call the `stackman` function with the error to be parsed and it will
+return a `stack` object.
 
 #### The `stack` object:
 
-The callback given to the `stackman` function is called with a stack
-object when the parsing is completed. The `stack` object have two
-important properties:
+The `stackman` function returns a `stack` object when given an error.
+The `stack` object have two important properties:
 
 - `properties` - An object containing all the custom properties from the
   original error object (properties of type `object` and `function` are
@@ -97,12 +91,6 @@ important properties:
 - `frames` - An array of stack-frames, also called callsite objects
 
 ### Callsite
-
-#### Custom properties
-
-- `callsite.context.pre` - The lines before the main callsite line
-- `callsite.context.line` - The main callsite line
-- `callsite.context.post` - The lines after the main callsite line
 
 #### Custom methods
 
@@ -119,10 +107,20 @@ important properties:
   string `<anonymous>` will be returned
 - `callsite.getModuleName()` - Returns the name of the module if
   `isModule()` is true
+- `callsite.getSourceContext(callback)` - Calls `callback` with an
+  optional error object as the first argument and a `context` object as
+  the 2nd. If the `callsite` is a node core callsite, the callback will
+  be called with an error
 - `callsite.isApp()` - Is this inside the app? (i.e. not native, not
   node code and not a module inside the node_modules directory)
 - `callsite.isModule()` - Is this inside the node_modules directory?
 - `callsite.isNode()` - Is this inside node core?
+
+##### The `context` object
+
+- `context.pre` - The lines before the main callsite line
+- `context.line` - The main callsite line
+- `context.post` - The lines after the main callsite line
 
 #### Methods inherited from V8
 
