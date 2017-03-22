@@ -112,7 +112,8 @@ important properties:
   the type of this as a string. This is the name of the function stored
   in the constructor field of this, if available, otherwise the object's
   [[Class]] internal property
-- `callsite.getRelativeFileName()` - Returns a filename realtive to `process.cwd()`
+- `callsite.getRelativeFileName()` - Returns a filename realtive to
+  `process.cwd()`
 - `callsite.getFunctionNameSanitized()` - Guaranteed to always return
   the most meaningful function name. If none can be determined, the
   string `<anonymous>` will be returned
