@@ -20,7 +20,7 @@ test('should override getTypeName() and safely catch exception', function (t) {
 
 test('should call the callback with a stack object', function (t) {
   var err = new Error()
-  var result = Stackman()(err, function (stack) {
+  Stackman()(err, function (stack) {
     t.ok(typeof stack === 'object', 'should be an object')
     t.ok(typeof stack.properties === 'object', 'should be an object')
     t.ok(Array.isArray(stack.frames), 'should be an array')
@@ -28,7 +28,6 @@ test('should call the callback with a stack object', function (t) {
     t.equal(typeof stack.frames[0].getFileName, 'function')
     t.end()
   })
-  t.equal(result, undefined) // ensure only sync returns something
 })
 
 test('should add custom properties to the stack object', function (t) {
@@ -103,17 +102,6 @@ test('should not share options between stackman functions', function (t) {
       cb2()
     }, 50)
   })
-})
-
-test('sync', function (t) {
-  var err = new Error()
-  var stack = Stackman({ sync: true })(err)
-  t.ok(typeof stack === 'object', 'should be an object')
-  t.ok(typeof stack.properties === 'object', 'should be an object')
-  t.ok(Array.isArray(stack.frames), 'should be an array')
-  t.ok(stack.frames.length > 0, 'should have at least one element')
-  t.equal(typeof stack.frames[0].getFileName, 'function')
-  t.end()
 })
 
 test('filter string', function (t) {

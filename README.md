@@ -78,9 +78,6 @@ Options:
   the callsite line (default: `7`)
 - `filter` - Accepts a single path segment or an array of path segments.
   Will filter out any stack frames that matches the given path segments.
-- `sync` - Set to `true` if you want stackman to behave synchronously.
-  If set, the result will be returned and the callback will be ignored
-  (default: `false`)
 
 The `stackman` function takes two arguments:
 

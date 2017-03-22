@@ -9,8 +9,7 @@ var debug = require('debug')('stackman')
 
 var isAbsolute = path.isAbsolute || require('path-is-absolute')
 
-var syncCache = require('lru-cache')({ max: 500 })
-var asyncCache = require('async-cache')({
+var cache = require('async-cache')({
   max: 500,
   load: function (file, cb) {
     debug('reading ' + file)
@@ -28,7 +27,6 @@ module.exports = function (opts) {
 
   if (!opts) opts = {}
   var linesOfContext = opts.context || LINES_OF_CONTEXT
-  var sync = opts.sync
 
   var stackFilter
   if (opts.filter === undefined) {
@@ -66,13 +64,11 @@ module.exports = function (opts) {
       frames: stack
     }
 
-    if (!sync) {
-      var next = afterAll(function () {
-        cb(result)
-      })
-    }
+    var next = afterAll(function () {
+      cb(result)
+    })
 
-    if (!validStack(stack)) return sync ? result : undefined
+    if (!validStack(stack)) return
 
     stack.forEach(function (callsite) {
       callsite.getRelativeFileName = getRelativeFileName.bind(callsite)
@@ -87,34 +83,17 @@ module.exports = function (opts) {
 
       var filename = callsite.getFileName() || ''
 
-      if (!sync) {
-        var done = next()
-        asyncCache.get(filename, function (err, data) {
-          if (err) {
-            debug('error reading ' + filename + ': ' + err.message)
-          } else {
-            data = data.split(/\r?\n/)
-            callsite.context = parseLines(data, callsite)
-          }
-          done()
-        })
-      } else if (syncCache.has(filename)) {
-        callsite.context = parseLines(syncCache.get(filename), callsite)
-      } else {
-        debug('reading ' + filename)
-        try {
-          var data = fs.readFileSync(filename, READ_FILE_OPTS)
-        } catch (e) {
-          debug('error reading ' + filename + ': ' + e.message)
-          return
+      var done = next()
+      cache.get(filename, function (err, data) {
+        if (err) {
+          debug('error reading ' + filename + ': ' + err.message)
+        } else {
+          data = data.split(/\r?\n/)
+          callsite.context = parseLines(data, callsite)
         }
-        data = data.split(/\r?\n/)
-        syncCache.set(filename, data)
-        callsite.context = parseLines(data, callsite)
-      }
+        done()
+      })
     })
-
-    return sync ? result : undefined
   }
 }
 

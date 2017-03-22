@@ -4,11 +4,9 @@
   "description": "Enhance an error stacktrace with code excerpts and other goodies",
   "main": "index.js",
   "dependencies": {
-    "after-all": "^2.0.2",
     "async-cache": "^1.1.0",
     "debug": "^2.2.0",
     "error-callsites": "^1.0.1",
-    "lru-cache": "^4.0.1",
     "path-is-absolute": "^1.0.1",
     "semver": "^5.3.0"
   },
