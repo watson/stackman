@@ -21,16 +21,15 @@ npm install stackman
 ## Basic usage
 
 ```javascript
-var stackman = require('stackman')()
+var stackman = require('stackman')
 
 var err = new Error('Oops!')
+var callsites = stackman.callsites(err)
 
-var stack = stackman(err)
-
-stack.frames.forEach(function (frame) {
+callsites.forEach(function (callsite) {
   console.log('Error occured in at %s line %d',
-    frame.getFileName(),
-    frame.getLineNumber())
+    callsite.getFileName(),
+    callsite.getLineNumber())
 })
 ```
 
@@ -38,121 +37,213 @@ stack.frames.forEach(function (frame) {
 
 ### `error.stack`
 
-This works because V8 (the JavaScript engine behind Node.js) allows us
-to hook into the stack trace generator function before that stack trace
-is generated. It's triggered by accessing the `.stack` property on the
-Error object, so please don't do that before parsing the error to
-stackman, else this will not work!
+This module works because V8 (the JavaScript engine behind Node.js)
+allows us to hook into the stack trace generator function before that
+stack trace is generated. It's triggered by accessing the `.stack`
+property on the Error object, so please don't do that before parsing the
+error to stackman, else this will not work!
 
 If you want to output the regular stack trace, just do so after parsing
-it to stackman:
+the callsites:
 
 ```javascript
-// first call stackman with the error
-stackman(err)
+// first call stackman.callsites with the error
+var callsites = stackman.callsites(err)
 
 // then you can print out the stack trace
 console.log(err.stack)
 ```
 
-## API
+## Stackman API
 
-### Module
+### `var callsites = stackman.callsites(err)`
 
-Parse options to the main stackman function to customize the default
-behavior:
+Given an error object, this function will return an array of
+[CallSite](#callsite-api) objects (a call site is a frame in the stack
+trace).
 
-```javascript
-var options = {
-  context: 5,
-  filter: '/node_modules/my-module/'
-}
-var stackman = require('stackman')(options)
-```
+### `var properties = stackman.properties(err)`
+
+Given an error object, this function will return an object containing
+all the custom properties from the original error object (beside date
+objects, properties of type `object` and `function` are not included in
+this object).
+
+### `stackman.sourceContexts(callsites[, options], callback)`
+
+Convenience function to get the source context for all call sites in the
+`callsites` argument in one go (instead of iterating over the call sites
+and calling
+[`callsite.sourceContext()`](#callsitesourcecontextoptions-callback) for
+each of them).
+
+Calls the `callback` with an optional error object as the first argument
+and an array of [source context objects](#source-context) as the 2nd.
+Each element in the context array matches a call site in the `callsites`
+array. The optional `options` object will be passed on to
+[`callsite.sourceContext()`](#callsitesourcecontextoptions-callback).
+
+All node core call sites will have the context value `null`.
+
+## CallSite API
+
+A CallSite object is an object provided by the [V8 stack trace
+API](https://github.com/v8/v8/wiki/Stack-Trace-API) representing a frame
+in the stack trace. Stackman will decorate each CallSite object with
+custom functions and behavior.
+
+### `var val = callsite.getThis()`
+
+_Inherited from V8_
+
+Returns the value of `this`.
+
+To maintain restrictions imposed on strict mode functions, frames that
+have a strict mode function and all frames below (its caller etc.) are
+not allow to access their receiver and function objects. For those
+frames, `getThis()` will return `undefined`.
+
+### `var str = callsite.getTypeName()`
+
+_Inherited from V8_
+
+Returns the type of `this` as a string. This is the name of the function
+stored in the constructor field of `this`, if available, otherwise the
+object's `[[Class]]` internal property.
+
+### `var str = callsite.getTypeNameSafely()`
+
+A safer version of
+[`callsite.getTypeName()`](#var-str--callsitegettypename) that safely
+handles an exception that sometimes is thrown when using `"use strict"`
+in which case `null` is returned.
+
+### `var fn = callsite.getFunction()`
+
+_Inherited from V8_
+
+Returns the current function.
+
+To maintain restrictions imposed on strict mode functions, frames that
+have a strict mode function and all frames below (its caller etc.) are
+not allow to access their receiver and function objects. For those
+frames, `getFunction()` will return `undefined`.
+
+### `var str = callsite.getFunctionName()`
+
+_Inherited from V8_
+
+Returns the name of the current function, typically its name property.
+If a name property is not available an attempt will be made to try to
+infer a name from the function's context.
+
+### `var str = callsite.getFunctionNameSanitized()`
+
+Guaranteed to always return the most meaningful function name. If none
+can be determined, the string `<anonymous>` will be returned.
+
+### `var str = callsite.getMethodName()`
+
+_Inherited from V8_
+
+Returns the name of the property of this or one of its prototypes that
+holds the current function.
+
+### `var str = callsite.getFileName()`
+
+_Inherited from V8_
+
+If this function was defined in a script returns the name of the script.
+
+### `var str = callsite.getRelativeFileName()`
+
+Returns a filename realtive to `process.cwd()`.
+
+### `var num = callsite.getLineNumber()`
+
+_Inherited from V8_
+
+If this function was defined in a script returns the current line
+number.
+
+### `var num = callsite.getColumnNumber()`
+
+_Inherited from V8_
+
+If this function was defined in a script returns the current column
+number.
+
+### `var str = callsite.getEvalOrigin()`
+
+_Inherited from V8_
+
+If this function was created using a call to eval returns a CallSite
+object representing the location where eval was called.
+
+### `var str = callsite.getModuleName()`
+
+Returns the name of the module if `isModule()` is `true`. Otherwise
+returns `null`.
+
+### `var bool = callsite.isToplevel()`
+
+_Inherited from V8_
+
+Is this a toplevel invocation, that is, is this the global object?
+
+### `var bool = callsite.isEval()`
+
+_Inherited from V8_
+
+Does this call take place in code defined by a call to eval?
+
+### `var bool = callsite.isNative()`
+
+_Inherited from V8_
+
+Is this call in native V8 code?
+
+### `var bool = callsite.isConstructor()`
+
+_Inherited from V8_
+
+Is this a constructor call?
+
+### `var bool = callsite.isApp()`
+
+Is this inside the app? (i.e. not native, not node code and not a module
+inside the `node_modules` directory)
+
+### `var bool = callsite.isModule()`
+
+Is this inside the `node_modules` directory?
+
+### `var bool = callsite.isNode()`
+
+Is this inside node core?
+
+### `callsite.sourceContext([options, ]callback)`
+
+Calls the `callback` with an optional error object as the first argument
+and a [source context object](#source-context) as the 2nd.
+
+If the `callsite` is a node core call site, the `callback` will be
+called with an error.
 
 Options:
 
-- `context` - Number of lines of context to be loaded on each side of
-  the callsite line (default: `7`)
-- `filter` - Accepts a single path segment or an array of path segments.
-  Will filter out any stack frames that matches the given path segments.
+- `lines` - Number of lines of soruce context to be loaded on each side
+  of the call site line (default: `7`)
 
-Call the `stackman` function with the error to be parsed and it will
-return a `stack` object.
+## Source Context
 
-#### The `stack` object:
+The source context objects provided by
+[`callsite.sourceContext`](#callsitesourcecontextoptions-callback)
+contains the following properties:
 
-The `stackman` function returns a `stack` object when given an error.
-The `stack` object have two important properties:
-
-- `properties` - An object containing all the custom properties from the
-  original error object (properties of type `object` and `function` are
-  not included in this object)
-- `frames` - An array of stack-frames, also called callsite objects
-
-### Callsite
-
-#### Custom methods
-
-- `callsite.getTypeNameSafely()` - A safer version of
-  `callsite.getTypeName()` as this safely handles an exception that
-  sometimes is thrown when using `"use strict"`. Otherwise it returns
-  the type of this as a string. This is the name of the function stored
-  in the constructor field of this, if available, otherwise the object's
-  [[Class]] internal property
-- `callsite.getRelativeFileName()` - Returns a filename realtive to
-  `process.cwd()`
-- `callsite.getFunctionNameSanitized()` - Guaranteed to always return
-  the most meaningful function name. If none can be determined, the
-  string `<anonymous>` will be returned
-- `callsite.getModuleName()` - Returns the name of the module if
-  `isModule()` is true
-- `callsite.sourceContext(callback)` - Calls `callback` with an optional
-  error object as the first argument and a `context` object as the 2nd.
-  If the `callsite` is a node core callsite, the callback will be called
-  with an error
-- `callsite.isApp()` - Is this inside the app? (i.e. not native, not
-  node code and not a module inside the node_modules directory)
-- `callsite.isModule()` - Is this inside the node_modules directory?
-- `callsite.isNode()` - Is this inside node core?
-
-##### The `context` object
-
-- `context.pre` - The lines before the main callsite line
-- `context.line` - The main callsite line
-- `context.post` - The lines after the main callsite line
-
-#### Methods inherited from V8
-
-The follwoing methods are inherited from the [V8 stack trace
-API](https://github.com/v8/v8/wiki/Stack-Trace-API).
-
-- `callsite.getThis()` - returns the value of this
-- `callsite.getTypeName()` - returns the type of this as a string. This
-  is the name of the function stored in the constructor field of this,
-  if available, otherwise the object's [[Class]] internal property.
-- `callsite.getFunction()` - returns the current function
-- `callsite.getFunctionName()` - returns the name of the current
-  function, typically its name property. If a name property is not
-  available an attempt will be made to try to infer a name from the
-  function's context.
-- `callsite.getMethodName()` - returns the name of the property of this
-  or one of its prototypes that holds the current function
-- `callsite.getFileName()` - if this function was defined in a script
-  returns the name of the script
-- `callsite.getLineNumber()` - if this function was defined in a script
-  returns the current line number
-- `callsite.getColumnNumber()` - if this function was defined in a
-  script returns the current column number
-- `callsite.getEvalOrigin()` - if this function was created using a call
-  to eval returns a CallSite object representing the location where eval
-  was called
-- `callsite.isToplevel()` - is this a toplevel invocation, that is, is
-  this the global object?
-- `callsite.isEval()` - does this call take place in code defined by a
-  call to eval?
-- `callsite.isNative()` - is this call in native V8 code?
-- `callsite.isConstructor()` - is this a constructor call?
+- `pre` - The lines before the main callsite line
+- `line` - The main callsite line
+- `post` - The lines after the main callsite line
 
 ## Troubleshooting
 
