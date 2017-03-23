@@ -144,6 +144,20 @@ function getModuleName () {
   return match ? match[1] : null
 }
 
+function isApp () {
+  return !this.isNode() && !~(this.getFileName() || '').indexOf('node_modules' + path.sep)
+}
+
+function isModule () {
+  return !!~(this.getFileName() || '').indexOf('node_modules' + path.sep)
+}
+
+function isNode () {
+  if (this.isNative()) return true
+  var filename = this.getFileName() || ''
+  return (!isAbsolute(filename) && filename[0] !== '.')
+}
+
 function sourceContext (opts, cb) {
   if (this.isNode()) {
     return process.nextTick(cb, new Error('Can\'t get source context of a Node core callsite'))
@@ -165,20 +179,6 @@ function sourceContext (opts, cb) {
       cb(null, parseLines(data, callsite, opts))
     }
   })
-}
-
-function isApp () {
-  return !this.isNode() && !~(this.getFileName() || '').indexOf('node_modules' + path.sep)
-}
-
-function isModule () {
-  return !!~(this.getFileName() || '').indexOf('node_modules' + path.sep)
-}
-
-function isNode () {
-  if (this.isNative()) return true
-  var filename = this.getFileName() || ''
-  return (!isAbsolute(filename) && filename[0] !== '.')
 }
 
 function parseLines (lines, callsite, opts) {
