@@ -62,6 +62,8 @@ Given an error object, this function will return an array of
 [CallSite](#callsite-api) objects (a call site is a frame in the stack
 trace).
 
+Will return `null` if a valid stack cannot be extracted.
+
 ### `var properties = stackman.properties(err)`
 
 Given an error object, this function will return an object containing
