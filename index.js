@@ -35,35 +35,35 @@ function callsites (err) {
     Object.defineProperties(callsite, {
       getRelativeFileName: {
         writable: false,
-        value: function () { return getRelativeFileName.apply(callsite, arguments) }
+        value: getRelativeFileName
       },
       getTypeNameSafely: {
         writable: false,
-        value: function () { return getTypeNameSafely.apply(callsite, arguments) }
+        value: getTypeNameSafely
       },
       getFunctionNameSanitized: {
         writable: false,
-        value: function () { return getFunctionNameSanitized.apply(callsite, arguments) }
+        value: getFunctionNameSanitized
       },
       getModuleName: {
         writable: false,
-        value: function () { return getModuleName.apply(callsite, arguments) }
+        value: getModuleName
       },
       isApp: {
         writable: false,
-        value: function () { return isApp.apply(callsite, arguments) }
+        value: isApp
       },
       isModule: {
         writable: false,
-        value: function () { return isModule.apply(callsite, arguments) }
+        value: isModule
       },
       isNode: {
         writable: false,
-        value: function () { return isNode.apply(callsite, arguments) }
+        value: isNode
       },
       sourceContext: {
         writable: false,
-        value: function () { return sourceContext.apply(callsite, arguments) }
+        value: sourceContext
       }
     })
   })
