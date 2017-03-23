@@ -21,7 +21,7 @@ var READ_FILE_OPTS = semver.lt(process.version, '0.9.11') ? 'utf8' : { encoding:
 var ESCAPED_REGEX_PATH_SEP = path.sep === '/' ? '/' : '\\\\'
 var MODULE_FOLDER_REGEX = new RegExp('.*node_modules' + ESCAPED_REGEX_PATH_SEP + '([^' + ESCAPED_REGEX_PATH_SEP + ']*)')
 
-module.exports = function (opts) {
+module.exports = function stackman (opts) {
   if (opts instanceof Error) throw new Error('Stackman not initialized yet. Please do so first and parse the error to the returned function instead')
 
   if (!opts) opts = {}
@@ -70,13 +70,13 @@ module.exports = function (opts) {
   }
 }
 
-var validStack = function (stack) {
+function validStack (stack) {
   return Array.isArray(stack) &&
          typeof stack[0] === 'object' &&
          typeof stack[0].getFileName === 'function'
 }
 
-var getRelativeFileName = function () {
+function getRelativeFileName () {
   var filename = this.getFileName()
   if (!filename) return
   var root = process.cwd()
@@ -84,7 +84,7 @@ var getRelativeFileName = function () {
   return !~filename.indexOf(root) ? filename : filename.substr(root.length)
 }
 
-var getTypeNameSafely = function () {
+function getTypeNameSafely () {
   try {
     return this.getTypeName()
   } catch (e) {
@@ -95,7 +95,7 @@ var getTypeNameSafely = function () {
   }
 }
 
-var getFunctionNameSanitized = function () {
+function getFunctionNameSanitized () {
   var fnName = this.getFunctionName()
   if (fnName) return fnName
   var typeName = this.getTypeNameSafely()
@@ -103,13 +103,13 @@ var getFunctionNameSanitized = function () {
   return '<anonymous>'
 }
 
-var getModuleName = function () {
+function getModuleName () {
   var filename = this.getFileName() || ''
   var match = filename.match(MODULE_FOLDER_REGEX)
   if (match) return match[1]
 }
 
-var sourceContext = function (opts, cb) {
+function sourceContext (opts, cb) {
   if (this.isNode()) {
     return cb(new Error('Can\'t get source context of a Node core callsite'))
   }
@@ -128,21 +128,21 @@ var sourceContext = function (opts, cb) {
   })
 }
 
-var isApp = function () {
+function isApp () {
   return !this.isNode() && !~(this.getFileName() || '').indexOf('node_modules' + path.sep)
 }
 
-var isModule = function () {
+function isModule () {
   return !!~(this.getFileName() || '').indexOf('node_modules' + path.sep)
 }
 
-var isNode = function () {
+function isNode () {
   if (this.isNative()) return true
   var filename = this.getFileName() || ''
   return (!isAbsolute(filename) && filename[0] !== '.')
 }
 
-var parseLines = function (lines, callsite, opts) {
+function parseLines (lines, callsite, opts) {
   var linesOfContext = opts.context || LINES_OF_CONTEXT
   var lineno = callsite.getLineNumber()
   return {
@@ -152,7 +152,7 @@ var parseLines = function (lines, callsite, opts) {
   }
 }
 
-var getProperties = function (err) {
+function getProperties (err) {
   var properties = {}
   Object.keys(err).forEach(function (key) {
     if (key === 'stack') return // 'stack' seems to be enumerable in Node 0.11
