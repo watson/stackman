@@ -30,6 +30,8 @@
     "stackframe",
     "callsite",
     "callsites",
+    "frame",
+    "source",
     "debug",
     "log",
     "error",
