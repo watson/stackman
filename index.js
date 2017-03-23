@@ -32,14 +32,40 @@ function callsites (err) {
   if (!validStack(stack)) return null
 
   stack.forEach(function (callsite) {
-    callsite.getRelativeFileName = getRelativeFileName.bind(callsite)
-    callsite.getTypeNameSafely = getTypeNameSafely.bind(callsite)
-    callsite.getFunctionNameSanitized = getFunctionNameSanitized.bind(callsite)
-    callsite.getModuleName = getModuleName.bind(callsite)
-    callsite.sourceContext = sourceContext.bind(callsite)
-    callsite.isApp = isApp.bind(callsite)
-    callsite.isModule = isModule.bind(callsite)
-    callsite.isNode = isNode.bind(callsite)
+    Object.defineProperties(callsite, {
+      getRelativeFileName: {
+        writable: false,
+        value: function () { return getRelativeFileName.apply(callsite, arguments) }
+      },
+      getTypeNameSafely: {
+        writable: false,
+        value: function () { return getTypeNameSafely.apply(callsite, arguments) }
+      },
+      getFunctionNameSanitized: {
+        writable: false,
+        value: function () { return getFunctionNameSanitized.apply(callsite, arguments) }
+      },
+      getModuleName: {
+        writable: false,
+        value: function () { return getModuleName.apply(callsite, arguments) }
+      },
+      isApp: {
+        writable: false,
+        value: function () { return isApp.apply(callsite, arguments) }
+      },
+      isModule: {
+        writable: false,
+        value: function () { return isModule.apply(callsite, arguments) }
+      },
+      isNode: {
+        writable: false,
+        value: function () { return isNode.apply(callsite, arguments) }
+      },
+      sourceContext: {
+        writable: false,
+        value: function () { return sourceContext.apply(callsite, arguments) }
+      }
+    })
   })
 
   return stack
