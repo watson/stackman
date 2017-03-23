@@ -60,7 +60,7 @@ module.exports = function (opts) {
       callsite.getTypeNameSafely = getTypeNameSafely.bind(callsite)
       callsite.getFunctionNameSanitized = getFunctionNameSanitized.bind(callsite)
       callsite.getModuleName = getModuleName.bind(callsite)
-      callsite.getSourceContext = getSourceContext.bind(callsite, opts)
+      callsite.sourceContext = sourceContext.bind(callsite, opts)
       callsite.isApp = isApp.bind(callsite)
       callsite.isModule = isModule.bind(callsite)
       callsite.isNode = isNode.bind(callsite)
@@ -109,7 +109,7 @@ var getModuleName = function () {
   if (match) return match[1]
 }
 
-var getSourceContext = function (opts, cb) {
+var sourceContext = function (opts, cb) {
   if (this.isNode()) {
     return cb(new Error('Can\'t get source context of a Node core callsite'))
   }

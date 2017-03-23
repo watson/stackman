@@ -107,10 +107,10 @@ The `stack` object have two important properties:
   string `<anonymous>` will be returned
 - `callsite.getModuleName()` - Returns the name of the module if
   `isModule()` is true
-- `callsite.getSourceContext(callback)` - Calls `callback` with an
-  optional error object as the first argument and a `context` object as
-  the 2nd. If the `callsite` is a node core callsite, the callback will
-  be called with an error
+- `callsite.sourceContext(callback)` - Calls `callback` with an optional
+  error object as the first argument and a `context` object as the 2nd.
+  If the `callsite` is a node core callsite, the callback will be called
+  with an error
 - `callsite.isApp()` - Is this inside the app? (i.e. not native, not
   node code and not a module inside the node_modules directory)
 - `callsite.isModule()` - Is this inside the node_modules directory?

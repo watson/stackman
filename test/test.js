@@ -44,7 +44,7 @@ test('should add extra functions', function (t) {
   var frame = stack.frames[0]
   t.equal(typeof frame.getFunctionNameSanitized, 'function')
   t.equal(typeof frame.getModuleName, 'function')
-  t.equal(typeof frame.getSourceContext, 'function')
+  t.equal(typeof frame.sourceContext, 'function')
   t.equal(typeof frame.isApp, 'function')
   t.equal(typeof frame.isModule, 'function')
   t.equal(typeof frame.isNode, 'function')
@@ -56,7 +56,7 @@ test('should create context object', function (t) {
   var stack = Stackman()(err)
   var frame = stack.frames[0]
 
-  frame.getSourceContext(function (err, context) {
+  frame.sourceContext(function (err, context) {
     t.error(err)
     t.equal(typeof context, 'object')
     t.equal(typeof context.line, 'string')
@@ -73,7 +73,7 @@ test('should respect the context option', function (t) {
   var stack = Stackman({ context: 2 })(err)
   var frame = stack.frames[0]
 
-  frame.getSourceContext(function (err, context) {
+  frame.sourceContext(function (err, context) {
     t.error(err)
     t.equal(context.pre.length, 2)
     t.equal(context.post.length, 2)
@@ -93,7 +93,7 @@ test('should not share options between stackman functions', function (t) {
   var stack1 = s1(err1)
   setTimeout(function () {
     var frame = stack1.frames[0]
-    frame.getSourceContext(function (err, context) {
+    frame.sourceContext(function (err, context) {
       t.error(err)
       t.equal(context.pre.length, 1)
       t.equal(context.post.length, 1)
@@ -104,7 +104,7 @@ test('should not share options between stackman functions', function (t) {
   var stack2 = s2(err2)
   setTimeout(function () {
     var frame = stack2.frames[0]
-    frame.getSourceContext(function (err, context) {
+    frame.sourceContext(function (err, context) {
       t.error(err)
       t.equal(context.pre.length, 2)
       t.equal(context.post.length, 2)
