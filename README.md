@@ -24,12 +24,15 @@ npm install stackman
 var stackman = require('stackman')
 
 var err = new Error('Oops!')
-var callsites = stackman.callsites(err)
 
-callsites.forEach(function (callsite) {
-  console.log('Error occured in at %s line %d',
-    callsite.getFileName(),
-    callsite.getLineNumber())
+stackman.callsites(err, function (err, callsites) {
+  if (err) throw err
+
+  callsites.forEach(function (callsite) {
+    console.log('Error occured in at %s line %d',
+      callsite.getFileName(),
+      callsite.getLineNumber())
+  })
 })
 ```
 
@@ -48,7 +51,7 @@ the callsites:
 
 ```javascript
 // first call stackman.callsites with the error
-var callsites = stackman.callsites(err)
+stackman.callsites(err, function () {...})
 
 // then you can print out the stack trace
 console.log(err.stack)
@@ -56,13 +59,17 @@ console.log(err.stack)
 
 ## Stackman API
 
-### `var callsites = stackman.callsites(err)`
+### `stackman.callsites(err[, options], callback)`
 
-Given an error object, this function will return an array of
-[CallSite](#callsite-api) objects (a call site is a frame in the stack
-trace).
+Given an error object, this function will call the `callback` with an
+optional error as the first argument and an array of
+[CallSite](#callsite-api) objects as the 2nd (a call site is a frame in
+the stack trace).
 
-Will return `null` if a valid stack cannot be extracted.
+Options:
+
+- `sourcemap` - A boolean specifying if Stackman should look for an
+  process source maps (default: `true`)
 
 ### `var properties = stackman.properties(err)`
 

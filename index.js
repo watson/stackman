@@ -26,10 +26,19 @@ exports.callsites = callsites
 exports.properties = properties
 exports.sourceContexts = sourceContexts
 
-function callsites (err) {
+function callsites (err, opts, cb) {
+  if (typeof opts === 'function') return callsites(err, null, opts)
+  if (!opts) opts = {}
+  if (!('sourcemap' in opts)) opts.sourcemap = true
+
   var stack = errorCallsites(err)
 
-  if (!validStack(stack)) return null
+  if (!validStack(stack)) {
+    process.nextTick(function () {
+      cb(new Error('Could not process callsites'))
+    })
+    return
+  }
 
   stack.forEach(function (callsite) {
     Object.defineProperties(callsite, {
@@ -68,7 +77,10 @@ function callsites (err) {
     })
   })
 
-  return stack
+  // TODO: Load sourcemap if `opts.sourcemap === true`
+  process.nextTick(function () {
+    cb(null, stack)
+  })
 }
 
 function properties (err) {
