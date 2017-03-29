@@ -5,6 +5,7 @@ var path = require('path')
 var semver = require('semver')
 var afterAll = require('after-all-results')
 var errorCallsites = require('error-callsites')
+var sourcemapCallsites = require('sourcemap-decorate-callsites')
 var debug = require('debug')('stackman')
 
 var isAbsolute = path.isAbsolute || require('path-is-absolute')
@@ -77,10 +78,13 @@ function callsites (err, opts, cb) {
     })
   })
 
-  // TODO: Load sourcemap if `opts.sourcemap === true`
-  process.nextTick(function () {
-    cb(null, stack)
-  })
+  if (opts.sourcemap) {
+    sourcemapCallsites(stack, cb)
+  } else {
+    process.nextTick(function () {
+      cb(null, stack)
+    })
+  }
 }
 
 function properties (err) {
