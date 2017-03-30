@@ -83,6 +83,10 @@ optional error as the first argument and an array of
 [CallSite](#callsite-api) objects as the 2nd (a call site is a frame in
 the stack trace).
 
+Note that any error related to loading or parsing source maps will be
+suppressed. If a source map related error occurs, Stackman behaves as if
+the `sourcemap` option is `false`.
+
 Options:
 
 - `sourcemap` - A boolean specifying if Stackman should look for an

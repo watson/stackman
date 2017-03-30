@@ -50,7 +50,9 @@ module.exports = function stackman (opts) {
       })
     } else if (!opts || opts.sourcemap !== false) {
       sourcemapify(_callsites, function (err) {
-        if (err) return cb(err)
+        if (err) {
+          debug('error processing source map: %s', err.message)
+        }
         _callsites.forEach(extendCallsite)
         cb(null, _callsites)
       })

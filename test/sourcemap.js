@@ -6,7 +6,7 @@ var stackman = require('../')()
 
 test('source maps disabled', function (t) {
   var err = require('./fixtures/lib/error')()
-  stackman.callsites(err, {sourcemap: false}, assertSourceMapDisabled.bind(null, t))
+  stackman.callsites(err, {sourcemap: false}, assertSourceMapNotLoaded.bind(null, t, 'error.js'))
 })
 
 test('source map inlined', function (t) {
@@ -34,73 +34,25 @@ test('source map linked', function (t) {
 test('fails', function (t) {
   t.test('inlined source map broken', function (t) {
     var err = require('./fixtures/lib/error-inline-broken')()
-    stackman.callsites(err, function (err, callsites) {
-      t.ok(err.message.indexOf('Error parsing sourcemap') === 0)
-      var callsite = callsites[0]
-      t.equal(callsite.getFileName(), path.join(__dirname, 'fixtures', 'lib', 'error-inline-broken.js'))
-      t.equal(callsite.getRelativeFileName(), path.join('test', 'fixtures', 'lib', 'error-inline-broken.js'))
-      t.equal(callsite.getLineNumber(), 6)
-      t.equal(callsite.getColumnNumber(), 10)
-      t.equal(callsite.getFunctionName(), 'generateError')
-      t.equal(callsite.getFunctionNameSanitized(), 'generateError')
-      t.equal(callsite.isApp(), __dirname.indexOf('node_modules') === -1)
-
-      callsite.sourceContext(function (err, context) {
-        t.error(err)
-        t.equal(context.line, '  return new Error(msg);')
-        t.end()
-      })
-    })
+    stackman.callsites(err, assertSourceMapNotLoaded.bind(null, t, 'error-inline-broken.js'))
   })
 
   t.test('linked source map not found', function (t) {
     var err = require('./fixtures/lib/error-map-missing')()
-    stackman.callsites(err, function (err, callsites) {
-      t.equal(err.code, 'ENOENT')
-      var callsite = callsites[0]
-      t.equal(callsite.getFileName(), path.join(__dirname, 'fixtures', 'lib', 'error-map-missing.js'))
-      t.equal(callsite.getRelativeFileName(), path.join('test', 'fixtures', 'lib', 'error-map-missing.js'))
-      t.equal(callsite.getLineNumber(), 6)
-      t.equal(callsite.getColumnNumber(), 10)
-      t.equal(callsite.getFunctionName(), 'generateError')
-      t.equal(callsite.getFunctionNameSanitized(), 'generateError')
-      t.equal(callsite.isApp(), __dirname.indexOf('node_modules') === -1)
-
-      callsite.sourceContext(function (err, context) {
-        t.error(err)
-        t.equal(context.line, '  return new Error(msg);')
-        t.end()
-      })
-    })
+    stackman.callsites(err, assertSourceMapNotLoaded.bind(null, t, 'error-map-missing.js'))
   })
 
   t.test('linked source map broken', function (t) {
     var err = require('./fixtures/lib/error-broken')()
-    stackman.callsites(err, function (err, callsites) {
-      t.error(err)
-      var callsite = callsites[0]
-      t.equal(callsite.getFileName(), path.join(__dirname, 'fixtures', 'lib', 'error-broken.js'))
-      t.equal(callsite.getRelativeFileName(), path.join('test', 'fixtures', 'lib', 'error-broken.js'))
-      t.equal(callsite.getLineNumber(), 6)
-      t.equal(callsite.getColumnNumber(), 10)
-      t.equal(callsite.getFunctionName(), 'generateError')
-      t.equal(callsite.getFunctionNameSanitized(), 'generateError')
-      t.equal(callsite.isApp(), __dirname.indexOf('node_modules') === -1)
-
-      callsite.sourceContext(function (err, context) {
-        t.error(err)
-        t.equal(context.line, '  return new Error(msg);')
-        t.end()
-      })
-    })
+    stackman.callsites(err, assertSourceMapNotLoaded.bind(null, t, 'error-broken.js'))
   })
 })
 
-function assertSourceMapDisabled (t, err, callsites) {
+function assertSourceMapNotLoaded (t, filename, err, callsites) {
   t.error(err)
   var callsite = callsites[0]
-  t.equal(callsite.getFileName(), path.join(__dirname, 'fixtures', 'lib', 'error.js'))
-  t.equal(callsite.getRelativeFileName(), path.join('test', 'fixtures', 'lib', 'error.js'))
+  t.equal(callsite.getFileName(), path.join(__dirname, 'fixtures', 'lib', filename))
+  t.equal(callsite.getRelativeFileName(), path.join('test', 'fixtures', 'lib', filename))
   t.equal(callsite.getLineNumber(), 6)
   t.equal(callsite.getColumnNumber(), 10)
   t.equal(callsite.getFunctionName(), 'generateError')
