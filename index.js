@@ -29,16 +29,16 @@ function callsites (err, opts, cb) {
   if (!opts) opts = {}
   if (!('sourcemap' in opts)) opts.sourcemap = true
 
-  var stack = errorCallsites(err)
+  var _callsites = errorCallsites(err)
 
-  if (!validStack(stack)) {
+  if (!validStack(_callsites)) {
     process.nextTick(function () {
       cb(new Error('Could not process callsites'))
     })
     return
   }
 
-  stack.forEach(function (callsite) {
+  _callsites.forEach(function (callsite) {
     Object.defineProperties(callsite, {
       getRelativeFileName: {
         writable: false,
@@ -77,7 +77,7 @@ function callsites (err, opts, cb) {
 
   // TODO: Load sourcemap if `opts.sourcemap === true`
   process.nextTick(function () {
-    cb(null, stack)
+    cb(null, _callsites)
   })
 }
 
@@ -115,10 +115,10 @@ function sourceContexts (callsites, opts, cb) {
   })
 }
 
-function validStack (stack) {
-  return Array.isArray(stack) &&
-         typeof stack[0] === 'object' &&
-         typeof stack[0].getFileName === 'function'
+function validStack (callsites) {
+  return Array.isArray(callsites) &&
+         typeof callsites[0] === 'object' &&
+         typeof callsites[0].getFileName === 'function'
 }
 
 function getRelativeFileName () {
