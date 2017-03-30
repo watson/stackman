@@ -4,7 +4,7 @@ var fs = require('fs')
 var path = require('path')
 var semver = require('semver')
 var test = require('tape')
-var stackman = require('../')
+var stackman = require('../')()
 
 test('stackman.callsites()', function (t) {
   var err = new Error('foo')

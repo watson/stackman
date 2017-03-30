@@ -21,7 +21,7 @@ npm install stackman
 ## Basic usage
 
 ```javascript
-var stackman = require('stackman')
+var stackman = require('stackman')()
 
 var err = new Error('Oops!')
 
@@ -58,6 +58,23 @@ console.log(err.stack)
 ```
 
 ## Stackman API
+
+### `var stackman = Stackman([options])`
+
+This module exposes a single function which you must call to get a
+`stackman` object.
+
+The function takes an optional options object as its only argument.
+These are the available options:
+
+- `fileCacheMax` - When source files are read from disk, they are kept
+  in memory in an LRU cache to speed up processing of future errors. You
+  can change the max number of files kept in the LRU cache using this
+  property (default: 500)
+- `sourceMapCacheMax` - When source maps are read from disk, the
+  processed source maps are kept in memory in an LRU cache to speed up
+  processing of future errors. You can change the max number of source
+  maps kept in the LRU cache using this property (default: 100)
 
 ### `stackman.callsites(err[, options], callback)`
 

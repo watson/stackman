@@ -2,7 +2,7 @@
 
 require('longjohn')
 var test = require('tape')
-var stackman = require('../')
+var stackman = require('../')()
 
 test('longjohn, regular error', function (t) {
   var err = new Error('foo')

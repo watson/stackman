@@ -1,5 +1,5 @@
 var test = require('tape')
-var stackman = require('../')
+var stackman = require('../')()
 
 test('callsite.getThis()', function (t) {
   var err = new Error('foo')

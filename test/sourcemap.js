@@ -3,7 +3,7 @@
 var path = require('path')
 var test = require('tape')
 var generateError = require('./fixtures/generateError')
-var stackman = require('../')
+var stackman = require('../')()
 
 test('sourcemapped location getters', function (t) {
   var err = generateError()
