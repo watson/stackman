@@ -101,6 +101,17 @@ API](https://github.com/v8/v8/wiki/Stack-Trace-API) representing a frame
 in the stack trace. Stackman will decorate each CallSite object with
 custom functions and behavior.
 
+### `callsite.sourcemap`
+
+If source map support is enabled and a source map have been found for
+the CallSite, this property will be a reference to a
+[`SourceMapConsumer`](https://github.com/mozilla/source-map#sourcemapconsumer)
+object representing the given CallSite.
+
+If set, all functions on the CallSite object will be source map aware.
+I.e. their return values will be related to the original source code and
+not the transpiled source code.
+
 ### `var val = callsite.getThis()`
 
 _Inherited from V8_
@@ -160,7 +171,7 @@ holds the current function.
 
 ### `var str = callsite.getFileName()`
 
-_Inherited from V8_
+_Inherited from V8 if `callsite.sourcemap` is `undefined`_
 
 If this function was defined in a script returns the name of the script.
 
@@ -170,14 +181,14 @@ Returns a filename realtive to `process.cwd()`.
 
 ### `var num = callsite.getLineNumber()`
 
-_Inherited from V8_
+_Inherited from V8 if `callsite.sourcemap` is `undefined`_
 
 If this function was defined in a script returns the current line
 number.
 
 ### `var num = callsite.getColumnNumber()`
 
-_Inherited from V8_
+_Inherited from V8 if `callsite.sourcemap` is `undefined`_
 
 If this function was defined in a script returns the current column
 number.
