@@ -8,7 +8,7 @@ var debug = require('debug')('stackman')
 
 var isAbsolute = path.isAbsolute || require('path-is-absolute')
 
-var cache = require('async-cache')({
+var fileCache = require('async-cache')({
   max: 500,
   load: function (file, cb) {
     debug('reading %s', file)
@@ -180,7 +180,7 @@ function sourceContext (opts, cb) {
   var callsite = this
   var filename = this.getFileName() || ''
 
-  cache.get(filename, function (err, source) {
+  fileCache.get(filename, function (err, source) {
     if (err) {
       debug('error reading %s: %s', filename, err.message)
       cb(err)
