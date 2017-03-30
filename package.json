@@ -18,7 +18,7 @@
     "tape": "^4.6.2"
   },
   "scripts": {
-    "test": "standard && node test/strict.js && node test/non-strict.js && node test/longjohn.js"
+    "test": "standard && node test/strict.js && node test/non-strict.js && node test/longjohn.js && node test/sourcemap.js"
   },
   "repository": {
     "type": "git",
@@ -47,5 +47,10 @@
   "coordinates": [
     55.6809887,
     12.5643973
-  ]
+  ],
+  "standard": {
+    "ignore": [
+      "/test/fixtures/"
+    ]
+  }
 }
