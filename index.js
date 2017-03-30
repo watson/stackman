@@ -11,7 +11,7 @@ var isAbsolute = path.isAbsolute || require('path-is-absolute')
 var cache = require('async-cache')({
   max: 500,
   load: function (file, cb) {
-    debug('reading ' + file)
+    debug('reading %s', file)
     fs.readFile(file, {encoding: 'utf8'}, cb)
   }
 })
@@ -182,7 +182,7 @@ function sourceContext (opts, cb) {
 
   cache.get(filename, function (err, data) {
     if (err) {
-      debug('error reading ' + filename + ': ' + err.message)
+      debug('error reading %s: %s', filename, err.message)
       cb(err)
     } else {
       data = data.split(/\r?\n/)
