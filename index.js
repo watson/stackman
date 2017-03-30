@@ -193,7 +193,7 @@ function sourcemapify (callsites, cb) {
     consumers.forEach(function (consumer, index) {
       if (!consumer) return
       Object.defineProperty(callsites[index], 'sourcemap', {
-        writable: false,
+        writable: true,
         value: consumer
       })
     })
@@ -219,42 +219,42 @@ function extendCallsite (callsite) {
   var position = null
   var properties = {
     getRelativeFileName: {
-      writable: false,
+      writable: true,
       value: getRelativeFileName
     },
     getTypeNameSafely: {
-      writable: false,
+      writable: true,
       value: getTypeNameSafely
     },
     getFunctionNameSanitized: {
-      writable: false,
+      writable: true,
       value: getFunctionNameSanitized
     },
     getModuleName: {
-      writable: false,
+      writable: true,
       value: getModuleName
     },
     isApp: {
-      writable: false,
+      writable: true,
       value: isApp
     },
     isModule: {
-      writable: false,
+      writable: true,
       value: isModule
     },
     isNode: {
-      writable: false,
+      writable: true,
       value: isNode
     },
     sourceContext: {
-      writable: false,
+      writable: true,
       value: sourceContext
     }
   }
 
   if (callsite.sourcemap) {
     properties.getFileName = {
-      writable: false,
+      writable: true,
       value: function () {
         var filename = getFileName.call(callsite)
         var sourceFile = getPosition().source
@@ -264,13 +264,13 @@ function extendCallsite (callsite) {
       }
     }
     properties.getLineNumber = {
-      writable: false,
+      writable: true,
       value: function () {
         return getPosition().line || getLineNumber.call(callsite)
       }
     }
     properties.getColumnNumber = {
-      writable: false,
+      writable: true,
       value: function () {
         return getPosition().column || getColumnNumber.call(callsite)
       }
