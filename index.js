@@ -290,10 +290,15 @@ module.exports = function stackman (opts) {
 
     function getPosition () {
       if (!position) {
-        position = callsite.sourcemap.originalPositionFor({
-          line: getLineNumber.call(callsite),
-          column: getColumnNumber.call(callsite)
-        })
+        try {
+          position = callsite.sourcemap.originalPositionFor({
+            line: getLineNumber.call(callsite),
+            column: getColumnNumber.call(callsite)
+          })
+        } catch (e) {
+          debug('error fetching source map position: %s', e.message)
+          return {}
+        }
       }
 
       return position
