@@ -2,7 +2,6 @@
 
 var fs = require('fs')
 var path = require('path')
-var semver = require('semver')
 var afterAll = require('after-all-results')
 var errorCallsites = require('error-callsites')
 var debug = require('debug')('stackman')
@@ -13,12 +12,11 @@ var cache = require('async-cache')({
   max: 500,
   load: function (file, cb) {
     debug('reading ' + file)
-    fs.readFile(file, READ_FILE_OPTS, cb)
+    fs.readFile(file, {encoding: 'utf8'}, cb)
   }
 })
 
 var LINES_OF_CONTEXT = 7
-var READ_FILE_OPTS = semver.lt(process.version, '0.9.11') ? 'utf8' : { encoding: 'utf8' }
 var ESCAPED_REGEX_PATH_SEP = path.sep === '/' ? '/' : '\\\\'
 var MODULE_FOLDER_REGEX = new RegExp('.*node_modules' + ESCAPED_REGEX_PATH_SEP + '([^' + ESCAPED_REGEX_PATH_SEP + ']*)')
 
