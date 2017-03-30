@@ -180,18 +180,18 @@ function sourceContext (opts, cb) {
   var callsite = this
   var filename = this.getFileName() || ''
 
-  cache.get(filename, function (err, data) {
+  cache.get(filename, function (err, source) {
     if (err) {
       debug('error reading %s: %s', filename, err.message)
       cb(err)
     } else {
-      data = data.split(/\r?\n/)
-      cb(null, parseLines(data, callsite, opts))
+      cb(null, parseSource(source, callsite, opts))
     }
   })
 }
 
-function parseLines (lines, callsite, opts) {
+function parseSource (source, callsite, opts) {
+  var lines = source.split(/\r?\n/)
   var linesOfContext = opts.lines || LINES_OF_CONTEXT
   var lineno = callsite.getLineNumber()
   return {
