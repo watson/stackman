@@ -283,6 +283,24 @@ test('callsite.sourceContext()', function (t) {
   })
 })
 
+test('callsite.sourceContext() - node core', function (t) {
+  var err = new Error()
+  stackman.callsites(err, function (err, callsites) {
+    t.error(err)
+
+    var callsite = callsites[0]
+    Object.defineProperty(callsite, 'isNode', {
+      writable: true,
+      value: function () { return true }
+    })
+
+    callsites[0].sourceContext(function (err, context) {
+      t.equal(err.message, 'Can\'t get source context of a Node core callsite')
+      t.end()
+    })
+  })
+})
+
 test('callsite.sourceContext({lines: 2})', function (t) {
   var err = new Error()
   stackman.callsites(err, function (err, callsites) {

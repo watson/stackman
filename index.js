@@ -145,12 +145,12 @@ function isNode () {
 }
 
 function sourceContext (opts, cb) {
-  if (this.isNode()) {
-    return process.nextTick(cb, new Error('Can\'t get source context of a Node core callsite'))
-  }
   if (typeof opts === 'function') {
     cb = opts
     opts = {}
+  }
+  if (this.isNode()) {
+    return process.nextTick(cb, new Error('Can\'t get source context of a Node core callsite'))
   }
 
   var callsite = this
