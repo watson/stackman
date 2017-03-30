@@ -2,17 +2,27 @@
 
 var fs = require('fs')
 var path = require('path')
+var asyncCache = require('async-cache')
 var afterAll = require('after-all-results')
 var errorCallsites = require('error-callsites')
+var loadSourceMap = require('load-source-map')
 var debug = require('debug')('stackman')
 
 var isAbsolute = path.isAbsolute || require('path-is-absolute')
 
-var fileCache = require('async-cache')({
+var fileCache = asyncCache({
   max: 500,
   load: function (file, cb) {
     debug('reading %s', file)
     fs.readFile(file, {encoding: 'utf8'}, cb)
+  }
+})
+
+var sourceMapCache = asyncCache({
+  max: 100,
+  load: function (file, cb) {
+    debug('loading source map for %s', file)
+    loadSourceMap(file, cb)
   }
 })
 
@@ -26,8 +36,6 @@ exports.sourceContexts = sourceContexts
 
 function callsites (err, opts, cb) {
   if (typeof opts === 'function') return callsites(err, null, opts)
-  if (!opts) opts = {}
-  if (!('sourcemap' in opts)) opts.sourcemap = true
 
   var _callsites = errorCallsites(err)
 
@@ -35,50 +43,18 @@ function callsites (err, opts, cb) {
     process.nextTick(function () {
       cb(new Error('Could not process callsites'))
     })
-    return
-  }
-
-  _callsites.forEach(function (callsite) {
-    Object.defineProperties(callsite, {
-      getRelativeFileName: {
-        writable: false,
-        value: getRelativeFileName
-      },
-      getTypeNameSafely: {
-        writable: false,
-        value: getTypeNameSafely
-      },
-      getFunctionNameSanitized: {
-        writable: false,
-        value: getFunctionNameSanitized
-      },
-      getModuleName: {
-        writable: false,
-        value: getModuleName
-      },
-      isApp: {
-        writable: false,
-        value: isApp
-      },
-      isModule: {
-        writable: false,
-        value: isModule
-      },
-      isNode: {
-        writable: false,
-        value: isNode
-      },
-      sourceContext: {
-        writable: false,
-        value: sourceContext
-      }
+  } else if (!opts || opts.sourcemap !== false) {
+    sourcemapify(_callsites, function (err) {
+      if (err) return cb(err)
+      _callsites.forEach(extendCallsite)
+      cb(null, _callsites)
     })
-  })
-
-  // TODO: Load sourcemap if `opts.sourcemap === true`
-  process.nextTick(function () {
-    cb(null, _callsites)
-  })
+  } else {
+    _callsites.forEach(extendCallsite)
+    process.nextTick(function () {
+      cb(null, _callsites)
+    })
+  }
 }
 
 function properties (err) {
@@ -179,15 +155,24 @@ function sourceContext (opts, cb) {
 
   var callsite = this
   var filename = this.getFileName() || ''
+  var source = this.sourcemap
+    ? this.sourcemap.sourceContentFor(filename, true)
+    : null
 
-  fileCache.get(filename, function (err, source) {
-    if (err) {
-      debug('error reading %s: %s', filename, err.message)
-      cb(err)
-    } else {
+  if (source) {
+    process.nextTick(function () {
       cb(null, parseSource(source, callsite, opts))
-    }
-  })
+    })
+  } else {
+    fileCache.get(filename, function (err, source) {
+      if (err) {
+        debug('error reading %s: %s', filename, err.message)
+        cb(err)
+      } else {
+        cb(null, parseSource(source, callsite, opts))
+      }
+    })
+  }
 }
 
 function parseSource (source, callsite, opts) {
@@ -198,5 +183,110 @@ function parseSource (source, callsite, opts) {
     pre: lines.slice(Math.max(0, lineno - (linesOfContext + 1)), lineno - 1),
     line: lines[lineno - 1],
     post: lines.slice(lineno, lineno + linesOfContext)
+  }
+}
+
+function sourcemapify (callsites, cb) {
+  var next = afterAll(function (err, consumers) {
+    if (err) return cb(err)
+
+    consumers.forEach(function (consumer, index) {
+      if (!consumer) return
+      Object.defineProperty(callsites[index], 'sourcemap', {
+        writable: false,
+        value: consumer
+      })
+    })
+
+    cb()
+  })
+
+  callsites.forEach(function (callsite) {
+    getSourceMapConsumer(callsite, next())
+  })
+}
+
+function getSourceMapConsumer (callsite, cb) {
+  if (isNode.call(callsite)) return process.nextTick(cb)
+  var filename = callsite.getFileName()
+  sourceMapCache.get(filename, cb)
+}
+
+function extendCallsite (callsite) {
+  var getLineNumber = callsite.getLineNumber
+  var getColumnNumber = callsite.getColumnNumber
+  var getFileName = callsite.getFileName
+  var position = null
+  var properties = {
+    getRelativeFileName: {
+      writable: false,
+      value: getRelativeFileName
+    },
+    getTypeNameSafely: {
+      writable: false,
+      value: getTypeNameSafely
+    },
+    getFunctionNameSanitized: {
+      writable: false,
+      value: getFunctionNameSanitized
+    },
+    getModuleName: {
+      writable: false,
+      value: getModuleName
+    },
+    isApp: {
+      writable: false,
+      value: isApp
+    },
+    isModule: {
+      writable: false,
+      value: isModule
+    },
+    isNode: {
+      writable: false,
+      value: isNode
+    },
+    sourceContext: {
+      writable: false,
+      value: sourceContext
+    }
+  }
+
+  if (callsite.sourcemap) {
+    properties.getFileName = {
+      writable: false,
+      value: function () {
+        var filename = getFileName.call(callsite)
+        var sourceFile = getPosition().source
+        if (!sourceFile) return filename
+        var sourceDir = path.dirname(filename)
+        return path.resolve(path.join(sourceDir, sourceFile))
+      }
+    }
+    properties.getLineNumber = {
+      writable: false,
+      value: function () {
+        return getPosition().line || getLineNumber.call(callsite)
+      }
+    }
+    properties.getColumnNumber = {
+      writable: false,
+      value: function () {
+        return getPosition().column || getColumnNumber.call(callsite)
+      }
+    }
+  }
+
+  Object.defineProperties(callsite, properties)
+
+  function getPosition () {
+    if (!position) {
+      position = callsite.sourcemap.originalPositionFor({
+        line: getLineNumber.call(callsite),
+        column: getColumnNumber.call(callsite)
+      })
+    }
+
+    return position
   }
 }
