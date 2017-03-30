@@ -1,5 +1,6 @@
 'use strict'
 
+var path = require('path')
 var test = require('tape')
 var generateError = require('./fixtures/generateError')
 var stackman = require('../')
@@ -9,7 +10,7 @@ test('sourcemapped location getters', function (t) {
   stackman.callsites(err, function (err, callsites) {
     t.error(err)
     var callsite = callsites[0]
-    t.ok(callsite.getFileName().indexOf('/generateError.original.js') !== -1)
+    t.equal(callsite.getFileName(), path.join(__dirname, 'fixtures', 'generateError.original.js'))
     t.equal(callsite.getLineNumber(), 2)
     t.equal(callsite.getColumnNumber(), 53)
     t.end()
@@ -40,5 +41,14 @@ test('sourcemapped context', function (t) {
       })
       t.end()
     })
+  })
+})
+
+test('callsite.getRelativeFileName()', function (t) {
+  var err = generateError()
+  stackman.callsites(err, function (err, callsites) {
+    t.error(err)
+    t.equal(callsites[0].getRelativeFileName(), 'test/fixtures/generateError.original.js')
+    t.end()
   })
 })
