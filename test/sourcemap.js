@@ -79,7 +79,7 @@ function assertSourceFound (t, err, callsites) {
     t.error(err)
     t.deepEqual(context.pre, ['// Just a little prefixing line'])
     t.equal(context.line, 'const generateError = (msg = \'foo\') => new Error(msg)')
-    t.deepEqual(context.post, ['', 'module.exports = generateError', ''])
+    t.deepEqual(context.post, ['', 'module.exports = generateError'])
     t.end()
   })
 }

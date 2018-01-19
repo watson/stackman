@@ -10,7 +10,7 @@ var debug = require('debug')('stackman')
 
 var isAbsolute = path.isAbsolute || require('path-is-absolute')
 
-var LINES_OF_CONTEXT = 7
+var LINES_OF_CONTEXT = 5
 var ESCAPED_REGEX_PATH_SEP = path.sep === '/' ? '/' : '\\\\'
 var MODULE_FOLDER_REGEX = new RegExp('.*node_modules' + ESCAPED_REGEX_PATH_SEP + '([^' + ESCAPED_REGEX_PATH_SEP + ']*)')
 
@@ -87,13 +87,17 @@ module.exports = function stackman (opts) {
     if (typeof opts === 'function') return sourceContexts(callsites, null, opts)
     if (!opts) opts = {}
 
+    opts.inAppLines = opts.inAppLines >= 0 ? opts.inAppLines : (opts.lines || LINES_OF_CONTEXT)
+    opts.libraryLines = opts.libraryLines >= 0 ? opts.libraryLines : (opts.lines || LINES_OF_CONTEXT)
+
     var next = afterAll(cb)
 
     callsites.forEach(function (callsite) {
-      if (callsite.isNode()) {
-        next()(null, null)
+      var lines = callsite.isApp() ? opts.inAppLines : opts.libraryLines
+      if (lines > 0 && !callsite.isNode()) {
+        callsite.sourceContext(lines, next())
       } else {
-        callsite.sourceContext(opts, next())
+        next()(null, null)
       }
     })
   }
@@ -151,10 +155,17 @@ module.exports = function stackman (opts) {
     return (!isAbsolute(filename) && filename[0] !== '.')
   }
 
-  function sourceContext (opts, cb) {
-    if (typeof opts === 'function') {
-      cb = opts
-      opts = {}
+  function sourceContext (lines, cb) {
+    if (typeof lines === 'function') {
+      cb = lines
+      lines = LINES_OF_CONTEXT
+    }
+
+    if (lines <= 0) {
+      process.nextTick(function () {
+        cb(new Error('Cannot collect less than one line of source context'))
+      })
+      return
     }
 
     if (this.isNode()) {
@@ -172,7 +183,7 @@ module.exports = function stackman (opts) {
 
     if (source) {
       process.nextTick(function () {
-        cb(null, parseSource(source, callsite, opts))
+        cb(null, parseSource(source, callsite, lines))
       })
     } else {
       fileCache.get(filename, function (err, source) {
@@ -180,20 +191,21 @@ module.exports = function stackman (opts) {
           debug('error reading %s: %s', filename, err.message)
           cb(err)
         } else {
-          cb(null, parseSource(source, callsite, opts))
+          cb(null, parseSource(source, callsite, lines))
         }
       })
     }
   }
 
-  function parseSource (source, callsite, opts) {
+  function parseSource (source, callsite, linesOfContext) {
     var lines = source.split(/\r?\n/)
-    var linesOfContext = opts.lines || LINES_OF_CONTEXT
-    var lineno = callsite.getLineNumber()
+    var index = callsite.getLineNumber() - 1
+    var preLinesOfContext = Math.ceil((linesOfContext - 1) / 2)
+    var postLinesOfContext = Math.floor((linesOfContext - 1) / 2)
     return {
-      pre: lines.slice(Math.max(0, lineno - (linesOfContext + 1)), lineno - 1),
-      line: lines[lineno - 1],
-      post: lines.slice(lineno, lineno + linesOfContext)
+      pre: lines.slice(Math.max(0, index - preLinesOfContext), index),
+      line: lines[index],
+      post: lines.slice(index + 1, index + 1 + postLinesOfContext)
     }
   }
 

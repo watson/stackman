@@ -110,10 +110,21 @@ each of them).
 Calls the `callback` with an optional error object as the first argument
 and an array of [source context objects](#source-context) as the 2nd.
 Each element in the context array matches a call site in the `callsites`
-array. The optional `options` object will be passed on to
-[`callsite.sourceContext()`](#callsitesourcecontextoptions-callback).
+array.
 
-All node core call sites will have the context value `null`.
+Options:
+
+- `lines` - Total number of lines of soruce context to be loaded with
+  the call site line in the center (default: `5`)
+- `inAppLines` - Total number of lines of soruce context to be loaded
+  with the call site line in the center if `callsite.isApp()` is `true`.
+  Overwrites `lines` (default: `5`)
+- `libraryLines` - Number of lines of soruce context to be loaded with
+  the call site line in the center if `callsite.isApp()` is `false`.
+  Overwrites `lines` (default: `5`)
+
+All node core call sites and call sites where no lines were collected
+due to the above options being `0`, will have the context value `null`.
 
 ## CallSite API
 
@@ -263,18 +274,20 @@ Is this inside the `node_modules` directory?
 
 Is this inside node core?
 
-### `callsite.sourceContext([options, ]callback)`
+### `callsite.sourceContext([lines, ]callback)`
 
-Calls the `callback` with an optional error object as the first argument
-and a [source context object](#source-context) as the 2nd.
+Get the source code surrounding the call site line.
 
 If the `callsite` is a node core call site, the `callback` will be
 called with an error.
 
-Options:
+Arguments:
 
-- `lines` - Number of lines of soruce context to be loaded on each side
-  of the call site line (default: `7`)
+- `lines` - Total number of lines of soruce context to be loaded with
+  the call site line in the center (default: `5`)
+- `callback` - called when the source context have been loaded with an
+  optional error object as the first argument and a [source context
+  object](#source-context) as the 2nd
 
 ## Source Context
 

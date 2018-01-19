@@ -276,8 +276,9 @@ test('callsite.sourceContext()', function (t) {
       t.equal(typeof context.line, 'string')
       t.ok(Array.isArray(context.pre), 'should be an array')
       t.ok(Array.isArray(context.post), 'should be an array')
-      t.equal(context.pre.length, 7)
-      t.equal(context.post.length, 7)
+      t.equal(context.pre.length, 2)
+      t.equal(context.post.length, 2)
+      t.equal(context.line.trim(), 'var err = new Error()')
       t.end()
     })
   })
@@ -301,15 +302,86 @@ test('callsite.sourceContext() - node core', function (t) {
   })
 })
 
-test('callsite.sourceContext({lines: 2})', function (t) {
+test('callsite.sourceContext(0)', function (t) {
   var err = new Error()
   stackman.callsites(err, function (err, callsites) {
     t.error(err)
 
-    callsites[0].sourceContext({lines: 2}, function (err, context) {
+    callsites[0].sourceContext(0, function (err, context) {
+      t.equal(err.message, 'Cannot collect less than one line of source context')
+      t.notOk(context)
+      t.end()
+    })
+  })
+})
+
+test('callsite.sourceContext(1)', function (t) {
+  var err = new Error()
+  stackman.callsites(err, function (err, callsites) {
+    t.error(err)
+
+    callsites[0].sourceContext(1, function (err, context) {
+      t.error(err)
+      t.equal(context.pre.length, 0)
+      t.equal(context.line.trim(), 'var err = new Error()')
+      t.equal(context.post.length, 0)
+      t.end()
+    })
+  })
+})
+
+test('callsite.sourceContext(2)', function (t) {
+  // line before
+  var err = new Error()
+  stackman.callsites(err, function (err, callsites) {
+    t.error(err)
+
+    callsites[0].sourceContext(2, function (err, context) {
+      t.error(err)
+      t.equal(context.pre.length, 1)
+      t.equal(context.pre[0].trim(), '// line before')
+      t.equal(context.line.trim(), 'var err = new Error()')
+      t.equal(context.post.length, 0)
+      t.end()
+    })
+  })
+})
+
+test('callsite.sourceContext(3)', function (t) {
+  // line before
+  var err = new Error()
+  // line after
+  stackman.callsites(err, function (err, callsites) {
+    t.error(err)
+
+    callsites[0].sourceContext(3, function (err, context) {
+      t.error(err)
+      t.equal(context.pre.length, 1)
+      t.equal(context.pre[0].trim(), '// line before')
+      t.equal(context.line.trim(), 'var err = new Error()')
+      t.equal(context.post.length, 1)
+      t.equal(context.post[0].trim(), '// line after')
+      t.end()
+    })
+  })
+})
+
+test('callsite.sourceContext(4)', function (t) {
+  // line before 2
+  // line before 1
+  var err = new Error()
+  // line after
+  stackman.callsites(err, function (err, callsites) {
+    t.error(err)
+
+    callsites[0].sourceContext(4, function (err, context) {
       t.error(err)
       t.equal(context.pre.length, 2)
-      t.equal(context.post.length, 2)
+      t.equal(context.pre[0].trim(), '// line before 2')
+      t.equal(context.pre[1].trim(), '// line before 1')
+      t.equal(context.line.trim(), 'var err = new Error()')
+      t.equal(context.post.length, 1)
+      t.equal(context.post[0].trim(), '// line after')
       t.end()
     })
   })
@@ -344,8 +416,8 @@ test('stackman.sourceContexts(callsites)', function (t) {
           t.equal(typeof context.line, 'string')
           t.ok(Array.isArray(context.pre), 'should be an array')
           t.ok(Array.isArray(context.post), 'should be an array')
-          t.equal(context.pre.length, 7)
-          t.equal(context.post.length, 7)
+          t.equal(context.pre.length, 2)
+          t.equal(context.post.length, 2)
         }
       })
       t.end()
@@ -353,12 +425,12 @@ test('stackman.sourceContexts(callsites)', function (t) {
   })
 })
 
-test('stackman.sourceContexts(callsites, {lines: 2})', function (t) {
+test('stackman.sourceContexts(callsites, {lines: 7})', function (t) {
   var err = new Error()
   stackman.callsites(err, function (err, callsites) {
     t.error(err)
 
-    stackman.sourceContexts(callsites, {lines: 2}, function (err, contexts) {
+    stackman.sourceContexts(callsites, {lines: 7}, function (err, contexts) {
       t.error(err)
       contexts.forEach(function (context, index) {
         var callsite = callsites[index]
@@ -370,8 +442,65 @@ test('stackman.sourceContexts(callsites, {lines: 2})', function (t) {
           t.equal(typeof context.line, 'string')
           t.ok(Array.isArray(context.pre), 'should be an array')
           t.ok(Array.isArray(context.post), 'should be an array')
+          t.equal(context.pre.length, 3)
+          t.equal(context.post.length, 3)
+        }
+      })
+      t.end()
+    })
+  })
+})
+
+test('stackman.sourceContexts(callsites, {inAppLines: 7, libraryLines: 3})', function (t) {
+  var err = new Error()
+  stackman.callsites(err, function (err, callsites) {
+    t.error(err)
+
+    stackman.sourceContexts(callsites, {inAppLines: 7, libraryLines: 3}, function (err, contexts) {
+      t.error(err)
+      contexts.forEach(function (context, index) {
+        var callsite = callsites[index]
+
+        if (callsite.isNode()) {
+          t.equal(context, null)
+        } else {
+          t.equal(typeof context, 'object')
+          t.equal(typeof context.line, 'string')
+          t.ok(Array.isArray(context.pre), 'should be an array')
+          t.ok(Array.isArray(context.post), 'should be an array')
+          if (callsite.isApp()) {
+            t.equal(context.pre.length, 3)
+            t.equal(context.post.length, 3)
+          } else {
+            t.equal(context.pre.length, 1)
+            t.equal(context.post.length, 1)
+          }
+        }
+      })
+      t.end()
+    })
+  })
+})
+
+test('stackman.sourceContexts(callsites, {libraryLines: 0})', function (t) {
+  var err = new Error()
+  stackman.callsites(err, function (err, callsites) {
+    t.error(err)
+
+    stackman.sourceContexts(callsites, {libraryLines: 0}, function (err, contexts) {
+      t.error(err)
+      contexts.forEach(function (context, index) {
+        var callsite = callsites[index]
+
+        if (callsite.isApp()) {
+          t.equal(typeof context, 'object')
+          t.equal(typeof context.line, 'string')
+          t.ok(Array.isArray(context.pre), 'should be an array')
+          t.ok(Array.isArray(context.post), 'should be an array')
           t.equal(context.pre.length, 2)
           t.equal(context.post.length, 2)
+        } else {
+          t.equal(context, null)
         }
       })
       t.end()
