@@ -64,7 +64,7 @@ test('callsite.getTypeName()', function (t) {
 })
 
 test('callsite.getTypeNameSafely()', function (t) {
-  // TODO: It would be nice if we could the the non-safe version to
+  // TODO: It would be nice if we could get the non-safe version to
   // throw in a test
   var err = new Error('foo')
   stackman.callsites(err, function (err, callsites) {
