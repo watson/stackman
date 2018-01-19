@@ -10,7 +10,7 @@ list of information, check out the API below.
 
 [![Build status](https://travis-ci.org/watson/stackman.svg?branch=master)](https://travis-ci.org/watson/stackman)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://github.com/feross/standard)
-[![sponsor](https://img.shields.io/badge/sponsored%20by-Opbeat-3360A3.svg)](https://opbeat.com)
+[![sponsor](https://img.shields.io/badge/sponsored%20by-Elastic-3360A3.svg)](https://www.elastic.co)
 
 ## Install
 
@@ -305,7 +305,7 @@ To enable debug mode, set the environment variable `DEBUG=stackman`.
 
 ## Acknowledgements
 
-This project was kindly sponsored by [Opbeat](https://opbeat.com).
+This project was kindly sponsored by [Elastic](https://www.elastic.co).
 
 ## License
 
