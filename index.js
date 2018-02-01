@@ -21,7 +21,10 @@ module.exports = function stackman (opts) {
     max: opts.fileCacheMax || 500,
     load: function (file, cb) {
       debug('reading %s', file)
-      fs.readFile(file, {encoding: 'utf8'}, cb)
+      fs.readFile(file, {encoding: 'utf8'}, function (err, data) {
+        if (err) return cb(err)
+        cb(null, data.split(/\r?\n/))
+      })
     }
   })
 
@@ -155,13 +158,13 @@ module.exports = function stackman (opts) {
     return (!isAbsolute(filename) && filename[0] !== '.')
   }
 
-  function sourceContext (lines, cb) {
-    if (typeof lines === 'function') {
-      cb = lines
-      lines = LINES_OF_CONTEXT
+  function sourceContext (linesOfContext, cb) {
+    if (typeof linesOfContext === 'function') {
+      cb = linesOfContext
+      linesOfContext = LINES_OF_CONTEXT
     }
 
-    if (lines <= 0) {
+    if (linesOfContext <= 0) {
       process.nextTick(function () {
         cb(new Error('Cannot collect less than one line of source context'))
       })
@@ -183,22 +186,21 @@ module.exports = function stackman (opts) {
 
     if (source) {
       process.nextTick(function () {
-        cb(null, parseSource(source, callsite, lines))
+        cb(null, parseSource(source, callsite, linesOfContext))
       })
     } else {
-      fileCache.get(filename, function (err, source) {
+      fileCache.get(filename, function (err, lines) {
         if (err) {
           debug('error reading %s: %s', filename, err.message)
           cb(err)
         } else {
-          cb(null, parseSource(source, callsite, lines))
+          cb(null, parseSource(lines, callsite, linesOfContext))
         }
       })
     }
   }
 
-  function parseSource (source, callsite, linesOfContext) {
-    var lines = source.split(/\r?\n/)
+  function parseSource (lines, callsite, linesOfContext) {
     var index = callsite.getLineNumber() - 1
     var preLinesOfContext = Math.ceil((linesOfContext - 1) / 2)
     var postLinesOfContext = Math.floor((linesOfContext - 1) / 2)
