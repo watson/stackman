@@ -89,7 +89,7 @@ the `sourcemap` option is `false`.
 
 Options:
 
-- `sourcemap` - A boolean specifying if Stackman should look for an
+- `sourcemap` - A boolean specifying if Stackman should look for and
   process source maps (default: `true`)
 
 ### `var properties = stackman.properties(err)`
