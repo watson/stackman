@@ -48,8 +48,9 @@ module.exports = function stackman (opts) {
     var _callsites = errorCallsites(err)
 
     if (!validStack(_callsites)) {
+      var _err = new Error('Could not process callsites')
       process.nextTick(function () {
-        cb(new Error('Could not process callsites'))
+        cb(_err)
       })
     } else if (!opts || opts.sourcemap !== false) {
       sourcemapify(_callsites, function (err) {
@@ -159,21 +160,25 @@ module.exports = function stackman (opts) {
   }
 
   function sourceContext (linesOfContext, cb) {
+    var _err
+
     if (typeof linesOfContext === 'function') {
       cb = linesOfContext
       linesOfContext = LINES_OF_CONTEXT
     }
 
     if (linesOfContext <= 0) {
+      _err = new Error('Cannot collect less than one line of source context')
       process.nextTick(function () {
-        cb(new Error('Cannot collect less than one line of source context'))
+        cb(_err)
       })
       return
     }
 
     if (this.isNode()) {
+      _err = new Error('Can\'t get source context of a Node core callsite')
       process.nextTick(function () {
-        cb(new Error('Can\'t get source context of a Node core callsite'))
+        cb(_err)
       })
       return
     }
