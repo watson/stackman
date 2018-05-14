@@ -48,7 +48,11 @@ module.exports = function stackman (opts) {
     var _callsites = errorCallsites(err)
 
     if (!validStack(_callsites)) {
-      var _err = new Error('Could not process callsites')
+      // debug information used by `validStack` function to determine if it's valid
+      var isArr = Array.isArray(_callsites)
+      var type1 = isArr && (typeof _callsites[0])
+      var type2 = isArr && (typeof _callsites[0].getFileName)
+      var _err = new Error('Could not process callsites (arr:' + isArr + ', t1:' + type1 + ', t2:' + type2 + ')')
       process.nextTick(function () {
         cb(_err)
       })
