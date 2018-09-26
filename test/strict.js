@@ -430,7 +430,7 @@ test('stackman.sourceContexts(callsites, {lines: 7})', function (t) {
   stackman.callsites(err, function (err, callsites) {
     t.error(err)
 
-    stackman.sourceContexts(callsites, {lines: 7}, function (err, contexts) {
+    stackman.sourceContexts(callsites, { lines: 7 }, function (err, contexts) {
       t.error(err)
       contexts.forEach(function (context, index) {
         var callsite = callsites[index]
@@ -456,7 +456,7 @@ test('stackman.sourceContexts(callsites, {inAppLines: 7, libraryLines: 3})', fun
   stackman.callsites(err, function (err, callsites) {
     t.error(err)
 
-    stackman.sourceContexts(callsites, {inAppLines: 7, libraryLines: 3}, function (err, contexts) {
+    stackman.sourceContexts(callsites, { inAppLines: 7, libraryLines: 3 }, function (err, contexts) {
       t.error(err)
       contexts.forEach(function (context, index) {
         var callsite = callsites[index]
@@ -487,7 +487,7 @@ test('stackman.sourceContexts(callsites, {libraryLines: 0})', function (t) {
   stackman.callsites(err, function (err, callsites) {
     t.error(err)
 
-    stackman.sourceContexts(callsites, {libraryLines: 0}, function (err, contexts) {
+    stackman.sourceContexts(callsites, { libraryLines: 0 }, function (err, contexts) {
       t.error(err)
       contexts.forEach(function (context, index) {
         var callsite = callsites[index]

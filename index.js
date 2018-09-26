@@ -21,7 +21,7 @@ module.exports = function stackman (opts) {
     max: opts.fileCacheMax || 500,
     load: function (file, cb) {
       debug('reading %s', file)
-      fs.readFile(file, {encoding: 'utf8'}, function (err, data) {
+      fs.readFile(file, { encoding: 'utf8' }, function (err, data) {
         if (err) return cb(err)
         cb(null, data.split(/\r?\n/))
       })

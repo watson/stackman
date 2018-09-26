@@ -6,7 +6,7 @@ var stackman = require('../')()
 
 test('source maps disabled', function (t) {
   var err = require('./fixtures/lib/error')()
-  stackman.callsites(err, {sourcemap: false}, assertSourceMapNotLoaded.bind(null, t, 'error.js'))
+  stackman.callsites(err, { sourcemap: false }, assertSourceMapNotLoaded.bind(null, t, 'error.js'))
 })
 
 test('source map inlined', function (t) {
