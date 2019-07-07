@@ -9,7 +9,8 @@
     "debug": "^3.2.5",
     "error-callsites": "^1.0.1",
     "load-source-map": "^1.0.0",
-    "path-is-absolute": "^1.0.1"
+    "path-is-absolute": "^1.0.1",
+    "snyk": "^1.192.3"
   },
   "devDependencies": {
     "longjohn": "^0.2.12",
@@ -18,7 +19,9 @@
     "tape": "^4.9.1"
   },
   "scripts": {
-    "test": "standard && node test/strict.js && node test/non-strict.js && node test/longjohn.js && node test/sourcemap.js"
+    "test": "standard && node test/strict.js && node test/non-strict.js && node test/longjohn.js && node test/sourcemap.js",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "repository": {
     "type": "git",
@@ -52,5 +55,6 @@
     "ignore": [
       "/test/fixtures/lib/"
     ]
-  }
+  },
+  "snyk": true
 }
