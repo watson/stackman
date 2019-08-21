@@ -8,8 +8,7 @@
     "async-cache": "^1.1.0",
     "debug": "^3.2.5",
     "error-callsites": "^1.0.1",
-    "load-source-map": "^1.0.0",
-    "path-is-absolute": "^1.0.1"
+    "load-source-map": "^1.0.0"
   },
   "devDependencies": {
     "longjohn": "^0.2.12",

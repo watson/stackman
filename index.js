@@ -8,8 +8,6 @@ var errorCallsites = require('error-callsites')
 var loadSourceMap = require('load-source-map')
 var debug = require('debug')('stackman')
 
-var isAbsolute = path.isAbsolute || require('path-is-absolute')
-
 var LINES_OF_CONTEXT = 5
 var ESCAPED_REGEX_PATH_SEP = path.sep === '/' ? '/' : '\\\\'
 var MODULE_FOLDER_REGEX = new RegExp('.*node_modules' + ESCAPED_REGEX_PATH_SEP + '([^' + ESCAPED_REGEX_PATH_SEP + ']*)')
@@ -156,7 +154,7 @@ module.exports = function stackman (opts) {
   function isNode () {
     if (this.isNative()) return true
     var filename = this.getFileName() || ''
-    return (!isAbsolute(filename) && filename[0] !== '.')
+    return (!path.isAbsolute(filename) && filename[0] !== '.')
   }
 
   function sourceContext (linesOfContext, cb) {
