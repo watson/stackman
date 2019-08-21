@@ -12,9 +12,9 @@
   },
   "devDependencies": {
     "longjohn": "^0.2.12",
-    "semver": "^5.5.1",
-    "standard": "^12.0.1",
-    "tape": "^4.9.1"
+    "semver": "^6.3.0",
+    "standard": "^14.0.0",
+    "tape": "^4.11.0"
   },
   "scripts": {
     "test": "standard && node test/strict.js && node test/non-strict.js && node test/longjohn.js && node test/sourcemap.js"
