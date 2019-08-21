@@ -8,6 +8,7 @@ lines for where the error occurred, you get to know if it happened
 inside a 3rd party module, in Node.js or in your own code. For a full
 list of information, check out the API below.
 
+[![npm](https://img.shields.io/npm/v/stackman.svg)](https://www.npmjs.com/package/stackman)
 [![Build status](https://travis-ci.org/watson/stackman.svg?branch=master)](https://travis-ci.org/watson/stackman)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://github.com/feross/standard)
 [![sponsor](https://img.shields.io/badge/sponsored%20by-Elastic-3360A3.svg)](https://www.elastic.co)
@@ -309,4 +310,4 @@ This project was kindly sponsored by [Elastic](https://www.elastic.co).
 
 ## License
 
-MIT
+[MIT](LICENSE)
