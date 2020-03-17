@@ -173,7 +173,18 @@ test('callsite.getEvalOrigin()', function (t) {
   var err = new Error('foo')
   stackman.callsites(err, function (err, callsites) {
     t.error(err)
-    t.equal(callsites[0].getEvalOrigin(), __filename)
+    t.equal(callsites[0].getEvalOrigin(), semver.gte(process.version, '12.11.0') ? undefined : __filename)
+    t.end()
+  })
+})
+
+test('callsite.getEvalOrigin()', function (t) {
+  var err = eval('new Error(\'foo\')') // eslint-disable-line no-eval
+  stackman.callsites(err, function (err, callsites) {
+    t.error(err)
+    var actual = callsites[0].getEvalOrigin()
+    var expected = new RegExp(`^eval at <anonymous> \\(${__filename}:\\d+:\\d+\\)$`)
+    t.ok(expected.test(actual), 'should match regex', { actual, expected })
     t.end()
   })
 })

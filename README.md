@@ -233,6 +233,9 @@ _Inherited from V8_
 If this function was created using a call to eval returns a CallSite
 object representing the location where eval was called.
 
+Note that since Node.js v12.11.0, this function returns `undefined`
+unless `eval` was used.
+
 ### `var str = callsite.getModuleName()`
 
 Returns the name of the module if `isModule()` is `true`. Otherwise
