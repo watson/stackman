@@ -35,9 +35,9 @@ module.exports = function stackman (opts) {
   })
 
   return {
-    callsites: callsites,
-    properties: properties,
-    sourceContexts: sourceContexts
+    callsites,
+    properties,
+    sourceContexts
   }
 
   function callsites (err, opts, cb) {
