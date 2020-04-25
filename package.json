@@ -51,5 +51,8 @@
     "ignore": [
       "/test/fixtures/lib/"
     ]
+  },
+  "engines": {
+    "node": ">=6"
   }
 }
