@@ -284,7 +284,7 @@ module.exports = function stackman (opts) {
       properties.getFileName = {
         writable: true,
         value: function () {
-          var filename = getFileName.call(callsite)
+          var filename = getFileName.call(callsite).replace(/^file:\/\//, '')
           var sourceFile = getPosition().source
           if (!sourceFile) return filename
           var sourceDir = path.dirname(filename)
@@ -301,6 +301,13 @@ module.exports = function stackman (opts) {
         writable: true,
         value: function () {
           return getPosition().column || getColumnNumber.call(callsite)
+        }
+      }
+    } else {
+      properties.getFileName = {
+        writable: true,
+        value: function () {
+          return getFileName.call(callsite).replace(/^file:\/\//, '')
         }
       }
     }
