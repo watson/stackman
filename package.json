@@ -13,7 +13,7 @@
   "devDependencies": {
     "longjohn": "^0.2.12",
     "semver": "^6.3.0",
-    "standard": "^14.3.3",
+    "standard": "^15.0.0",
     "tape": "^4.13.2"
   },
   "scripts": {
